@@ -1,0 +1,11 @@
+flask
+flask-script
+flask-wtf
+#py-bcrypt
+flask-bcrypt
+flask-admin
+python-slugify
+flask-debugtoolbar
+peewee
+peewee_migrate
+
