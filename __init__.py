@@ -1,8 +1,10 @@
 from flask import Flask, redirect, url_for, request, session, abort
 from functools import wraps
 from flask_admin import Admin
-from playhouse.flask_utils import FlaskDB
+from playhouse.flask_utils import FlaskDB ### useless
+from peewee import SqliteDatabase
 from werkzeug.routing import BaseConverter
+from flask.ext.bcrypt import Bcrypt
 
 
 def login_required(handler):
@@ -32,6 +34,7 @@ def author_required(handler):
 app = Flask(__name__)
 app.config.from_object("settings")
 db = FlaskDB(app)
+bcrypt = Bcrypt(app)
 
 admin = Admin(app, name='Time Sheets', template_mode='bootstrap3')
 
@@ -44,9 +47,6 @@ class DateConverter(BaseConverter):
 
     def to_url(self, value):
         return value.isoformat()
-
 app.url_map.converters['date'] = DateConverter
-
-
 
 import views

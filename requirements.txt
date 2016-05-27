@@ -6,6 +6,9 @@ flask-bcrypt
 flask-admin
 python-slugify
 flask-debugtoolbar
+flask-login
 peewee
 peewee_migrate
+flask-security
+flask-peewee
 

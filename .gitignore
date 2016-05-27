@@ -28,3 +28,5 @@ pip-log.txt
 venv
 *.pyc
 build
+
+timesheet.db
