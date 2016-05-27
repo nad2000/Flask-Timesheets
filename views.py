@@ -1,6 +1,6 @@
 from flask_timesheets import app, db
 from flask import g, render_template, redirect, flash, url_for, session, abort, request
-from models import User, Company, BreakType
+from models import User, Company, Break
 from peewee import IntegrityError
 from functools import wraps
 from datetime import datetime
@@ -226,3 +226,4 @@ def create():
 @app.context_processor
 def _inject_user():
     return {'current_user': get_current_user()}
+    

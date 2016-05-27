@@ -5,7 +5,7 @@ from playhouse.flask_utils import FlaskDB ### useless
 from peewee import SqliteDatabase
 from werkzeug.routing import BaseConverter
 from flask.ext.bcrypt import Bcrypt
-
+from datetime import date, timedelta
 
 def login_required(handler):
 
@@ -30,7 +30,16 @@ def author_required(handler):
             return handler(*args, **kwargs)
     return decorated_function
 
+def week_day_dates():
+    """
+    iterates though the current week day dates
+    """
+    week_day_date = date.today() - timedelta(days=date.today().weekday())
+    for _ in range(7):
+        yield week_day_date
+        week_day_date += timedelta(days=1)
 
+        
 app = Flask(__name__)
 app.config.from_object("settings")
 db = FlaskDB(app)
