@@ -5,13 +5,11 @@
   <h1><a href="{{ url_for('homepage') }}">Timesheets</a></h1>
   <div class=metanav>
   {% if not session.logged_in %}
-    <a href="{{ url_for('login') }}">log in</a>
-    <a href="{{ url_for('join') }}">join</a>
+    <a href="{{ url_for('security.login') }}">log in</a>
   {% else %}
     <a href="{{ url_for('timesheets') }}">Filling</a>
     <a href="{{ url_for('approve') }}">Approve</a>
-    <a href="{{ url_for('create') }}">Create</a>
-    <a href="{{ url_for('logout') }}">Log out</a>
+    <a href="{{ url_for('security.logout') }}">Log out</a>
   {% endif %}
   </div>
   {% for message in get_flashed_messages() %}

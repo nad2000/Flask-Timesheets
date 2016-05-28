@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import os, sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from flask_timesheets import bcrypt, week_day_dates
+from flask_timesheets import bcrypt, week_day_dates, encrypt_password, app
 from models import *
 from itertools import product
 from datetime import time
@@ -49,9 +49,9 @@ for code, name, length in (
 
 
 # Create all roles:
-emp = Role.insert(name="emp").execute()
-approver = Role.insert(name="approver").execute()
-admin = Role.insert(name="admin").execute()
+emp = user_datastore.create_role(name="emp")
+approver = user_datastore.create_role(name="approver")
+admin = user_datastore.create_role(name="admin")
 
 # Companies:
 Company.insert_many((dict(code=code, name=name) for code, name in (
@@ -68,7 +68,8 @@ Company.insert_many((dict(code=code, name=name) for code, name in (
 ))).execute()
 
 # Users
-test_password = bcrypt.generate_password_hash('12345')
+with app.app_context():
+    test_password = encrypt_password('12345')
 for id, (username, email, first_name, last_name) in enumerate((
             ('user0', 'user0@nowhere.com','Test', 'User0'),
             ('user1', 'user1@nowhere.com','Test', 'User1'),
@@ -76,7 +77,7 @@ for id, (username, email, first_name, last_name) in enumerate((
             ('admin0', 'admin0@nowhere.com','Test', 'Admin0'),
             ('admin1', 'admin1@nowhere.com','Test', 'Admin1'),
             ('admin2', 'admin2@nowhere.com','Test', 'Admin2'),), 1):
-    user = User(
+    user = user_datastore.create_user(
             username=username,
             #code=username.upper(),
             email=email,

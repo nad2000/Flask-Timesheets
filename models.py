@@ -1,19 +1,29 @@
 from datetime import datetime
 from peewee import Model, CharField, DateTimeField, ForeignKeyField, \
     TextField, IntegerField, DateField, TimeField, BooleanField
-from flask_timesheets import db, FlaskDB
+from flask_timesheets import db, FlaskDB, app
 from hashlib import md5
-from flask.ext.security import Security, PeeweeUserDatastore, UserMixin, RoleMixin, login_required
+from flask.ext.security import Security, PeeweeUserDatastore, UserMixin, \
+    RoleMixin, login_required
 from playhouse.fields import ManyToManyField
-from peewee import drop_model_tables
+from peewee import drop_model_tables, Proxy, CompositeKey
+
+UserRolesProxy = Proxy()
+ApproverCompaniesProxy = Proxy()
 
 class Company(db.Model):
     name = CharField()
     code = CharField()
     
+    class Meta:
+        table_alias = 'c'
+    
 class Role(db.Model, RoleMixin):
     name = CharField(unique=True)
     description = TextField(null=True)
+    
+    class Meta:
+        table_alias = 'c'
     
 class User(db.Model, UserMixin):
     username = CharField(unique=True)
@@ -21,20 +31,47 @@ class User(db.Model, UserMixin):
     email = CharField()
     first_name = CharField()
     last_name = CharField()
+    #confirmed_at = DateTimeField(null=True)
+    active = BooleanField(default=True)
     workplace = ForeignKeyField(Company, related_name='works_for')
-    roles = ManyToManyField(Role, related_name='users')
-    approves_for = ManyToManyField(Company, related_name='verified_by')
-    
-    class Meta:
-        order_by = ('username',)
-
-    @property
-    def full_name(self):
-        return "%s %s" % (self.first_name, self.last_name)
+    roles = ManyToManyField(Role, related_name='users', through_model=UserRolesProxy)
+    approves_for = ManyToManyField(Company, related_name='approved_by', through_model=ApproverCompaniesProxy)
+    full_name = property(lambda self: "%s %s" % (self.first_name, self.last_name))
 
     def gravatar_url(self, size=80):
         return "http://www.gravatar.com/avatar/%s?d=identicon&s=%d" % \
             (md5(self.email.strip().lower().encode('utf-8')).hexdigest(), size)
+
+    
+    class Meta:
+        order_by = ('username',)
+        table_alias = 'u'
+
+class UserRoles(db.Model):
+    user = ForeignKeyField(User, index=True, db_column='user_id')
+    role = ForeignKeyField(Role, index=True, db_column='role_id')
+    name = property(lambda self: self.role.name)
+    description = property(lambda self: self.role.description)
+    
+    class Meta:
+        db_table = "user_role"
+        table_alias = 'ur'
+        primary_key = CompositeKey('user', 'role')
+
+UserRolesProxy.initialize(UserRoles)
+ 
+class ApproverCompanies(db.Model):
+    user = ForeignKeyField(User, index=True, db_column='user_id')
+    company = ForeignKeyField(Company, index=True, db_column='company_id')
+    name = property(lambda self: self.company.name)
+    code = property(lambda self: self.company.code)
+
+    class Meta:
+        db_table = "approver_company"
+        table_alias = "ac"
+        primary_key = CompositeKey('user', 'company')
+            
+ApproverCompaniesProxy.initialize(ApproverCompanies)
 
 class Break(db.Model):
     code = CharField(unique=True)
@@ -44,6 +81,7 @@ class Break(db.Model):
 
     class Meta:
         order_by = ('code',)
+        table_alias = 'b'
     
     def __str__(self):
         return self.name
@@ -62,13 +100,7 @@ class Entry(db.Model):
     comment = TextField(null=True)
     break_for = ForeignKeyField(Break, related_name='break_for', null=True)
     is_approved = BooleanField(default=False)
-    
-    @property
-    def break_length(self):
-        if self.break_for:
-            return self.break_for.minutes
-        else:
-            return 0
+    break_length = property(lambda self: self.break_for.minutes if self.break_for else 0)
     
     @property
     def total_min(self):
@@ -90,6 +122,14 @@ class Entry(db.Model):
             
         return output
 
+    class Meta:
+        table_alias = 'e'
+
+
+# Setup Flask-Security
+user_datastore = PeeweeUserDatastore(db, User, Role, UserRoles)
+security = Security(app, user_datastore)
+        
 def create_tables():
     """
     Create all DB tables
@@ -105,13 +145,13 @@ def create_tables():
         User,
         Break,
         Entry,
-        User.roles.get_through_model(),
-        User.approves_for.get_through_model()))
-        
+        UserRoles,
+        ApproverCompanies,))
+ 
+ 
 def drop_talbes():
     """
     Drop all model tables
     """
-    models =  [User.roles.get_through_model(), User.approves_for.get_through_model()]
-    models.extend(m for m in globals().values() if isinstance(m, type)  and issubclass(m, db.Model))
+    models = (m for m in globals().values() if isinstance(m, type)  and issubclass(m, db.Model))
     drop_model_tables(models, fail_silently=True)

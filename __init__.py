@@ -5,7 +5,10 @@ from playhouse.flask_utils import FlaskDB ### useless
 from peewee import SqliteDatabase
 from werkzeug.routing import BaseConverter
 from flask.ext.bcrypt import Bcrypt
+from flask.ext.security.utils import encrypt_password
 from datetime import date, timedelta
+import logging
+
 
 def login_required(handler):
 
@@ -46,6 +49,13 @@ db = FlaskDB(app)
 bcrypt = Bcrypt(app)
 
 admin = Admin(app, name='Time Sheets', template_mode='bootstrap3')
+
+
+if app.debug:
+    # Log all SQL queries:
+    logger = logging.getLogger('peewee')
+    logger.setLevel(logging.DEBUG)
+    logger.addHandler(logging.StreamHandler())
 
 class DateConverter(BaseConverter):
     """
