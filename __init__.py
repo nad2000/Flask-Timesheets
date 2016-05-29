@@ -1,4 +1,5 @@
 from flask import Flask, redirect, url_for, request, session, abort
+from flask_security import current_user
 from functools import wraps
 from flask_admin import Admin
 from flask_admin.contrib.peewee import ModelView
