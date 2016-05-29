@@ -5,10 +5,16 @@ from peewee import IntegrityError
 from functools import wraps
 from datetime import datetime
 from hashlib import md5
-from flask.ext.security import login_required
+from flask.ext.security import login_required, roles_required
 
 
 class AppModelView(ModelView):
+
+    column_formatters = dict(
+        started_at=lambda v, c, m, p: m.started_at.strftime("%H:%M"),
+        finished_at=lambda v, c, m, p: m.finished_at.strftime("%H:%M"),
+        modified_at=lambda v, c, m, p: m.modified_at.strftime("%Y-%m-%d %H:%M"),
+    )
 
     def is_accessible(self):
         if not current_user.is_active or not current_user.is_authenticated:
@@ -116,6 +122,7 @@ def timesheet(week_start_date=None):
 @app.route("/approve/<user_name>")
 @app.route("/approve/")
 @login_required
+@roles_required('approver')
 # TODO: approver role
 def approve(user_name=None, week_start_date=None):
     # TODO: handle dates
