@@ -41,7 +41,6 @@ class User(db.Model, UserMixin):
     def gravatar_url(self, size=80):
         return "http://www.gravatar.com/avatar/%s?d=identicon&s=%d" % \
             (md5(self.email.strip().lower().encode('utf-8')).hexdigest(), size)
-
     
     class Meta:
         order_by = ('username',)

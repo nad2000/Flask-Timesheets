@@ -1,12 +1,17 @@
-from flask_timesheets import app, db
+from flask_timesheets import app, db, admin, ModelView
 from flask import g, render_template, redirect, flash, url_for, session, abort, request
-from models import User, Company, Break, Entry, user_datastore, security
+from models import User, Role, Company, Break, Entry, user_datastore, security
 from peewee import IntegrityError
 from functools import wraps
 from datetime import datetime
 from hashlib import md5
 from flask.ext.security import login_required
 
+admin.add_view(ModelView(Break))
+admin.add_view(ModelView(User))
+admin.add_view(ModelView(Role))
+admin.add_view(ModelView(Company))
+admin.add_view(ModelView(Entry))
 
 # def auth_user(user):
     # """
