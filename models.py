@@ -7,6 +7,7 @@ from flask.ext.security import Security, PeeweeUserDatastore, UserMixin, \
     RoleMixin, login_required
 from playhouse.fields import ManyToManyField
 from peewee import drop_model_tables, Proxy, CompositeKey
+from forms import ExtendedLoginForm
 
 UserRolesProxy = Proxy()
 ApproverCompaniesProxy = Proxy()
@@ -17,6 +18,10 @@ class Company(db.Model):
     
     class Meta:
         table_alias = 'c'
+        
+    def __str__(self):
+        return self.name
+      
     
 class Role(db.Model, RoleMixin):
     name = CharField(unique=True)
@@ -26,7 +31,7 @@ class Role(db.Model, RoleMixin):
         table_alias = 'c'
     
 class User(db.Model, UserMixin):
-    username = CharField(unique=True)
+    username = CharField(unique=True, index=True)
     password = CharField()
     email = CharField()
     first_name = CharField()
@@ -45,6 +50,9 @@ class User(db.Model, UserMixin):
     class Meta:
         order_by = ('username',)
         table_alias = 'u'
+        
+    def __str__(self):
+        return self.full_name
 
 class UserRoles(db.Model):
     user = ForeignKeyField(User, index=True, db_column='user_id')
@@ -127,7 +135,7 @@ class Entry(db.Model):
 
 # Setup Flask-Security
 user_datastore = PeeweeUserDatastore(db, User, Role, UserRoles)
-security = Security(app, user_datastore)
+security = Security(app, user_datastore, login_form=ExtendedLoginForm)
         
 def create_tables():
     """

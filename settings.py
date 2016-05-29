@@ -6,3 +6,5 @@ DATABASE = "sqlite:///timesheet.db"
 POSTS_PER_PAGE = 5
 SECURITY_PASSWORD_HASH = 'bcrypt'
 SECURITY_PASSWORD_SALT = "hd$Td70F5k#5=8"
+# login with a username or an email address
+SECURITY_USER_IDENTITY_ATTRIBUTES = ('username','email')

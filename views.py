@@ -7,8 +7,13 @@ from datetime import datetime
 from hashlib import md5
 from flask.ext.security import login_required
 
+
+class UserView(ModelView):
+    can_create = False
+    column_exclude_list = ['password']
+
 admin.add_view(ModelView(Break))
-admin.add_view(ModelView(User))
+admin.add_view(UserView(User))
 admin.add_view(ModelView(Role))
 admin.add_view(ModelView(Company))
 admin.add_view(ModelView(Entry))
