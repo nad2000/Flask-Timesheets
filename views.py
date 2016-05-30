@@ -9,6 +9,10 @@ from flask.ext.security import login_required, roles_required
 
 
 class AppModelView(ModelView):
+    """
+    Admin Model view customization according to
+    
+    """
 
     column_formatters = dict(
         started_at=lambda v, c, m, p: m.started_at.strftime("%H:%M"),

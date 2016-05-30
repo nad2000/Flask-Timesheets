@@ -28,7 +28,7 @@ class Role(db.Model, RoleMixin):
     description = TextField(null=True)
     
     class Meta:
-        table_alias = 'c'
+        table_alias = 'r'
     
 class User(db.Model, UserMixin):
     username = CharField(unique=True, index=True)

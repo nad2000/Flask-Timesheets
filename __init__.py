@@ -57,6 +57,10 @@ if app.debug:
     logger.setLevel(logging.DEBUG)
     logger.addHandler(logging.StreamHandler())
 
+    from flask_debugtoolbar import DebugToolbarExtension
+    toolbar = DebugToolbarExtension(app)
+    
+    
 class DateConverter(BaseConverter):
     """
     Date value converter from a string formated as "YYYY-MM-DD"
