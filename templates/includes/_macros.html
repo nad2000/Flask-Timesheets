@@ -1,3 +1,12 @@
+
+{% macro menu_item(endpoint, caption) -%}
+<!--
+{{endpoint}} //
+{{active_page}}
+--> 
+<li {% if endpoint == active_page %}class="active"{% endif %}><a href="{{ url_for(endpoint) }}">{{caption}}</a></li>	
+{%- endmacro %}
+
 {% macro menu_icon(item) -%}
 {% set icon_type = item.get_icon_type() %}
 {%- if icon_type %}

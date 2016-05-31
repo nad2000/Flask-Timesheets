@@ -1,3 +1,4 @@
+{%- set active_page = request.endpoint|default('index') %}
 {% import 'includes/_macros.html' as macros with context -%}
 <!DOCTYPE html>
 <html>
@@ -33,15 +34,9 @@
 			<!-- navbar content -->
 			<div class="nav navbar-nav" id="app-navbar">
 				<ul class="nav navbar-nav">
-					<li>
-						<a href="{{ url_for('timesheet') }}">Filling</a>
-					</li>
-					<li>
-						<a href="{{ url_for('approve') }}">Approving</a>
-					</li>
-					<li>
-						<a href="{{ url_for('admin.index') }}">Administration</a>
-					</li>
+					{{ macros.menu_item('timesheet', 'Filling') }}
+					{{ macros.menu_item('approve', 'Approving') }}
+					{{ macros.menu_item('admin.index', 'Administration') }}
 				</ul>
 			</div>
 			<ul class="nav navbar-nav navbar-right">
