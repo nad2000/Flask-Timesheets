@@ -35,8 +35,22 @@
 			<div class="nav navbar-nav" id="app-navbar">
 				<ul class="nav navbar-nav">
 					{{ macros.menu_item('timesheet', 'Filling') }}
-					{{ macros.menu_item('approve', 'Approving') }}
-					{{ macros.menu_item('admin.index', 'Administration') }}
+					{% if current_user.has_role('approver') %}
+						{{ macros.menu_item('approve', 'Approving') }}
+						{{ macros.menu_item('report', 'Reporting') }}
+					{% endif %}
+					{% if current_user.has_role('admin') %}
+					<li class="dropdown">
+						<a class="dropdown-toggle" data-toggle="dropdown" href="{{ url_for('admin.index') }}">Administration<span class="caret"></span></a>
+						<ul class="dropdown-menu">
+							{{ macros.menu_item('break.index_view',    'Breaks') }}
+							{{ macros.menu_item('user.index_view',     'Users') }}
+							{{ macros.menu_item('role.index_view',     'Roles') }}
+							{{ macros.menu_item('company.index_view',  'Companies') }}
+							{{ macros.menu_item('entry.index_view',    'Entries') }}
+						</ul>
+					</li>
+					{% endif %}
 				</ul>
 			</div>
 			<ul class="nav navbar-nav navbar-right">

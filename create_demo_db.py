@@ -74,6 +74,9 @@ for id, (username, email, first_name, last_name) in enumerate((
             ('user0', 'user0@nowhere.com','Test', 'User0'),
             ('user1', 'user1@nowhere.com','Test', 'User1'),
             ('user2', 'user2@nowhere.com','Test', 'User2'),
+            ('approver0', 'approver0@nowhere.com','Test', 'Approver0'),
+            ('approver1', 'approver1@nowhere.com','Test', 'Approver1'),
+            ('approver2', 'approver2@nowhere.com','Test', 'Approver2'),
             ('admin0', 'admin0@nowhere.com','Test', 'Admin0'),
             ('admin1', 'admin1@nowhere.com','Test', 'Admin1'),
             ('admin2', 'admin2@nowhere.com','Test', 'Admin2'),), 1):

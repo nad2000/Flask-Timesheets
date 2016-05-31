@@ -127,10 +127,18 @@ def timesheet(week_start_date=None):
 @app.route("/approve/")
 @login_required
 @roles_required('approver')
-# TODO: approver role
 def approve(user_name=None, week_start_date=None):
     # TODO: handle dates
     return render_template("approve.html")
+
+@app.route("/report/<user_name>/<date:week_start_date>")
+@app.route("/report/<user_name>")
+@app.route("/report/")
+@login_required
+@roles_required('approver')
+def report(user_name=None, week_start_date=None):
+    # TODO: handle dates
+    return render_template("empty.html")
 
 
 # @app.route('/private/')
