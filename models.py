@@ -6,7 +6,7 @@ from hashlib import md5
 from flask.ext.security import Security, PeeweeUserDatastore, UserMixin, \
     RoleMixin, login_required
 from playhouse.fields import ManyToManyField
-from peewee import drop_model_tables, Proxy, CompositeKey
+from peewee import drop_model_tables, Proxy, CompositeKey, RawQuery
 from forms import ExtendedLoginForm
 
 UserRolesProxy = Proxy()
@@ -97,6 +97,7 @@ class Break(db.Model):
         return "Break(code=%r, name=%r, minutes=%r, alternative_code=%r)" \
             % (self.code, self.name, self.minutes, self.alternative_code)
 
+
 class Entry(db.Model):
     date = DateField()
     user = ForeignKeyField(User, related_name='reported_by')
@@ -132,7 +133,28 @@ class Entry(db.Model):
     class Meta:
         table_alias = 'e'
 
+    @classmethod
+    def get_user_timesheet(cls, *, user, week_ending_date):
+        rq = RawQuery(cls, """
+        WITH
+            daynums(num) AS (VALUES (6),(5),(4),(3),(2),(1),(0)),
+            week(day) AS (SELECT date(?, '+'||num||' day')FROM daynums)
+        SELECT
+            id,
+            day as date,
+            finished_at,
+            started_at,
+            user_id,
+            approver_id,
+            modified_at,
+            break_for_id,
+            is_approved,
+            comment
+        FROM week LEFT JOIN entry ON "date" = day AND user_id = ?
+        """, week_ending_date.strftime("%Y-%m-%d"), user.id)
+        return rq.execute()
 
+        
 # Setup Flask-Security
 user_datastore = PeeweeUserDatastore(db, User, Role, UserRoles)
 security = Security(app, user_datastore, login_form=ExtendedLoginForm)
