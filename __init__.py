@@ -8,7 +8,7 @@ from peewee import SqliteDatabase
 from werkzeug.routing import BaseConverter
 from flask.ext.bcrypt import Bcrypt
 from flask.ext.security.utils import encrypt_password
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 import logging
 
 # def login_required(handler):
