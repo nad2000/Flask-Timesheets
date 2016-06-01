@@ -1,6 +1,13 @@
 {% extends "base.html" %}
-{% block body %}
+{% block content %}
   <h2>Timesheets</h2>
-  <p>Welcome to the site!</p>
-  <!-- filling the timesheets -->
+  
+  <ul>
+  {% for e in timesheet %}
+	  <li>
+		{{e.date}}
+	  </li>
+  </ul>
+  {% endfor %}
+  
 {% endblock %}

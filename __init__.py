@@ -34,6 +34,9 @@ import logging
             # return handler(*args, **kwargs)
     # return decorated_function
 
+def current_week_ending_date():
+    return date.today() - timedelta(days=(7 - date.today().weekday()))
+    
 def week_day_dates():
     """
     iterates though the current week day dates

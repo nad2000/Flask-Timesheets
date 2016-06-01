@@ -1,7 +1,7 @@
 from datetime import datetime
 from peewee import Model, CharField, DateTimeField, ForeignKeyField, \
     TextField, IntegerField, DateField, TimeField, BooleanField
-from flask_timesheets import db, FlaskDB, app
+from flask_timesheets import db, FlaskDB, app, current_user, current_week_ending_date
 from hashlib import md5
 from flask.ext.security import Security, PeeweeUserDatastore, UserMixin, \
     RoleMixin, login_required
@@ -134,7 +134,13 @@ class Entry(db.Model):
         table_alias = 'e'
 
     @classmethod
-    def get_user_timesheet(cls, *, user, week_ending_date):
+    def get_user_timesheet(cls, *, user=None, week_ending_date=None):
+        if user is None:
+            user = current_user
+            
+        if week_ending_date is None:
+            week_ending_date = current_week_ending_date()
+            
         rq = RawQuery(cls, """
         WITH
             daynums(num) AS (VALUES (6),(5),(4),(3),(2),(1),(0)),
@@ -151,7 +157,7 @@ class Entry(db.Model):
             is_approved,
             comment
         FROM week LEFT JOIN entry ON "date" = day AND user_id = ?
-        """, week_ending_date.strftime("%Y-%m-%d"), user.id)
+        ORDER BY "date" ASC""", week_ending_date.isoformat(), user.id)
         return rq.execute()
 
         

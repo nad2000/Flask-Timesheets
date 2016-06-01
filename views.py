@@ -1,4 +1,4 @@
-from flask_timesheets import app, db, admin, ModelView, current_user
+from flask_timesheets import app, db, admin, ModelView, current_user, current_week_ending_date
 from flask import g, render_template, redirect, flash, url_for, session, abort, request
 from models import User, Role, Company, Break, Entry, user_datastore, security
 from peewee import IntegrityError
@@ -114,12 +114,15 @@ def is_following(from_user, to_user):
 def homepage():
     return render_template("empty.html")
     
-@app.route("/timesheet/<date:week_start_date>")
+@app.route("/timesheet/<date:week_ending_date>")
 @app.route("/timesheet/")    
 @login_required
-def timesheet(week_start_date=None):
-    # TODO: handle dates
-    return render_template("timesheet.html")
+def timesheet(week_ending_date=None):
+    if week_ending_date is None:
+        week_ending_date = current_week_ending_date()
+    
+    timesheet = Entry.get_user_timesheet(user=current_user, week_ending_date=week_ending_date)
+    return render_template("timesheet.html", timesheet=timesheet)
 
     
 @app.route("/approve/<user_name>/<date:week_start_date>")
