@@ -1,4 +1,4 @@
-from flask_timesheets import app, db, admin, ModelView, current_user, current_week_ending_date
+from flask_timesheets import app, db, admin, ModelView, current_user, current_week_ending_date, week_ending_dates
 from flask import g, render_template, redirect, flash, url_for, session, abort, request
 from models import User, Role, Company, Break, Entry, user_datastore, security
 from peewee import IntegrityError
@@ -122,7 +122,10 @@ def timesheet(week_ending_date=None):
         week_ending_date = current_week_ending_date()
     
     timesheet = Entry.get_user_timesheet(user=current_user, week_ending_date=week_ending_date)
-    return render_template("timesheet.html", timesheet=timesheet)
+    return render_template("timesheet.html", 
+        timesheet=timesheet, 
+        week_ending_date=week_ending_date, 
+        week_ending_dates=week_ending_dates())
 
     
 @app.route("/approve/<user_name>/<date:week_start_date>")

@@ -36,6 +36,14 @@ import logging
 
 def current_week_ending_date():
     return date.today() - timedelta(days=(7 - date.today().weekday()))
+
+def week_ending_dates(weeks=7):
+   
+    week_day_date = current_week_ending_date()
+    for _ in range(7):
+        yield week_day_date
+        week_day_date -= timedelta(weeks=1)
+
     
 def week_day_dates():
     """

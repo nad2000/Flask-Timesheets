@@ -1,6 +1,26 @@
 {% extends "base.html" %}
+
+{% block head %}
+	{{ super() }}
+	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='selectize.js/css/selectize.css') }}" />
+{% endblock %}
 {% block content %}
-  <h2>Timesheets</h2>
+  
+	<div class="row">
+		<div class="col-md-2">
+			<label for="week-ending-date"><span class="label label-primary">Week ending on:</span></label>
+			<select id="week-ending-date" name="week-ending-date" class="selectized">
+				{%- for wed in week_ending_dates %}
+				<option {% if wed==week_ending_date %}selected{% endif %} value="{{wed.isoformat()}}">{{wed.isoformat()}}</option>
+				{% endfor -%}
+			</select>
+		</div>
+	</div>
+	
+	<div class="row">
+		<div class="col-md-6">
+		</div>
+	</div>
   
   <ul>
   {% for e in timesheet %}
@@ -9,5 +29,20 @@
 	  </li>
   </ul>
   {% endfor %}
-  
+{% endblock %}
+{% block footer %}
+	{{ super() }}
+	<script src="{{ url_for('static', filename='selectize.js/js/standalone/selectize.min.js') }}"></script>
+	<script>
+	$(function(){
+		$('#week-ending-date').selectize({create: true});
+		$('#week-ending-date').on('change', function () {
+			var selcted_date = $(this).val();
+			if (selcted_date) {
+				window.location = "{{ url_for(request.endpoint) }}"+selcted_date;
+			}
+			return false;
+		});
+	});	
+	</script>
 {% endblock %}
