@@ -3,11 +3,11 @@ from peewee import Model, CharField, DateTimeField, ForeignKeyField, \
     TextField, IntegerField, DateField, TimeField, BooleanField
 from flask_timesheets import db, FlaskDB, app, current_user, current_week_ending_date
 from hashlib import md5
-from flask.ext.security import Security, PeeweeUserDatastore, UserMixin, \
+from flask.ext.security import PeeweeUserDatastore, UserMixin, \
     RoleMixin, login_required
 from playhouse.fields import ManyToManyField
 from peewee import drop_model_tables, Proxy, CompositeKey, RawQuery
-from forms import ExtendedLoginForm
+
 
 UserRolesProxy = Proxy()
 ApproverCompaniesProxy = Proxy()
@@ -163,7 +163,6 @@ class Entry(db.Model):
         
 # Setup Flask-Security
 user_datastore = PeeweeUserDatastore(db, User, Role, UserRoles)
-security = Security(app, user_datastore, login_form=ExtendedLoginForm)
         
 def create_tables():
     """

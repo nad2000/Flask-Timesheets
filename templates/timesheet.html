@@ -25,6 +25,12 @@
 	  </li>
   </ul>
   {% endfor %}
+  
+	<form action="" method="post" role="form">
+		{{ form.entries() }}
+		<input type="submit" value="Submit!" />
+	</form>  
+  
 {% endblock %}
 {% block footer %}
 	{{ super() }}
