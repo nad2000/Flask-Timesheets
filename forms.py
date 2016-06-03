@@ -3,6 +3,7 @@ from flask_security.forms import LoginForm
 from wtforms import validators, StringField, TextAreaField, DateField, DateTimeField, SelectField, FormField, FieldList
 from wtforms.validators import InputRequired
 from models import Break
+from werkzeug.datastructures import MultiDict
 
 class ExtendedLoginForm(LoginForm):
     email = StringField('Username or Email Address', [InputRequired()])
@@ -27,10 +28,17 @@ class EntryForm(Form):
     #new_category = StringField("New Category")
 
 class TimeSheetForm(Form):
-    entries = FieldList(FormField(EntryForm), min_entries=7) #, max_entries=7)
+    entries = FieldList(FormField(EntryForm), min_entries=7, max_entries=7)
     
-    def fill(self, entries):
-        for e in entries:
-            self.entries.append_entry((e.date, e.started_at, e.finished_at, e.break_for.id if e.break_for else None))
+    def fill(self, timesheet):
+        for e in timesheet:
+            entry = MultiDict([
+                ('date', e.date),
+                ('started_at', e.started_at), 
+                ('finished_at', e.finished_at), 
+                ('break_for', e.break_for.id if e.break_for else None)
+            ])
+            row = EntryForm(entry)
+            self.entries.append_entry(row)
             
     
