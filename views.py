@@ -122,7 +122,9 @@ def homepage():
 def timesheet(week_ending_date=None):
     if week_ending_date is None:
         week_ending_date = current_week_ending_date()
-        
+      
+    breaks = Break.select(Break.id, Break.name).execute()
+    
     timesheet = Entry.get_user_timesheet(
         user=current_user, 
         week_ending_date=week_ending_date)
@@ -134,6 +136,7 @@ def timesheet(week_ending_date=None):
     return render_template("timesheet.html",
         form=form,
         timesheet=timesheet, 
+        breaks=breaks,
         week_ending_date=week_ending_date, 
         week_ending_dates=week_ending_dates())
         

@@ -1,10 +1,14 @@
 
 {% macro menu_item(endpoint, caption) -%}
-<!--
-{{endpoint}} //
-{{active_page}}
---> 
 <li {% if endpoint == active_page %}class="active"{% endif %}><a href="{{ url_for(endpoint) }}">{{caption}}</a></li>	
+{%- endmacro %}
+
+{% macro break_select(name, break_for) -%}
+<select name="{{name}}" id="{{name}}">
+	{%- for b in breaks %}
+	<option {% if break_for and break_for.id == b.id %}active{% endif %} value="{{b.id}}" text="{{b.name}}"/>
+	{% endfor -%}
+</select>
 {%- endmacro %}
 
 {% macro menu_icon(item) -%}
