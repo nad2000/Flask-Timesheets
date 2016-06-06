@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from peewee import Model, CharField, DateTimeField, ForeignKeyField, \
     TextField, IntegerField, DateField, TimeField, BooleanField
 from flask_timesheets import db, FlaskDB, app, current_user, current_week_ending_date
@@ -112,10 +112,19 @@ class Entry(db.Model):
     
     @property
     def total_min(self):
+        if self.started_at is None or self.finished_at is None:
+            return None
         total = (self.finished_at.hour - self.started_at.hour) * 60
         total += (self.finished_at.minute - self.started_at.minute)
         total -= self.break_length
         return total
+        
+    @property 
+    def total_time(self):
+        total = self.total
+        if total is None:
+            return None
+        return timedelta(hour=(total / 60), minutes=(total % 60))
                 
     def __str__(self):
         output = "On %s from %s to %s" % (
