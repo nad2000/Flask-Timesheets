@@ -24,8 +24,8 @@
 		<div class="col-md-2">{{e.date}}</div>
 		<div class="col-md-1"><input name="{{ '%d:started_at' % loop.index0 }}" id="{{ '%d:started_at' % loop.index0 }}" value="{{e.started_at}}" /></div>
 		<div class="col-md-1"><input name="{{ '%d:finished_at' % loop.index0 }}" id="{{ '%d:finished_at' % loop.index0 }}" value="{{e.finished_at}}" /></div>
-		<div class="col-md-1">{{macros.break_select('%d:break_for' % loop.index0, breaks)}}</div>
-		<div class="col-md-1">{{e.total_time}}##</div>
+		<div class="col-md-2"><span>{{macros.break_select('%d:break_for' % loop.index0, e)}}</span></div>
+		<div class="col-md-1">{{macros.total_time(e)}}</div>
 	</div>
   {% endfor %}
   

@@ -128,13 +128,8 @@ def timesheet(week_ending_date=None):
     timesheet = Entry.get_user_timesheet(
         user=current_user, 
         week_ending_date=week_ending_date)
-    form = TimeSheetForm()
-    #form.fill(timesheet)
-    if form.validate_on_submit():
-        pass
     
     return render_template("timesheet.html",
-        form=form,
         timesheet=timesheet, 
         breaks=breaks,
         week_ending_date=week_ending_date, 

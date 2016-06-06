@@ -8,7 +8,6 @@ from flask.ext.security import PeeweeUserDatastore, UserMixin, \
 from playhouse.fields import ManyToManyField
 from peewee import drop_model_tables, Proxy, CompositeKey, RawQuery
 
-
 UserRolesProxy = Proxy()
 ApproverCompaniesProxy = Proxy()
 
@@ -121,21 +120,22 @@ class Entry(db.Model):
         
     @property 
     def total_time(self):
-        total = self.total
+        total = self.total_min
         if total is None:
             return None
-        return timedelta(hour=(total / 60), minutes=(total % 60))
+        return timedelta(hours=(total / 60), minutes=(total % 60))
                 
     def __str__(self):
         output = "On %s from %s to %s" % (
             self.date.isoformat(), 
-            self.started_at.strftime("%H:%M"),
-            self.finished_at.strftime("%H:%M"))
+            "N/A" if self.started_at is None else self.started_at.strftime("%H:%M"),
+            "N/A" if self.finished_at is None else self.finished_at.strftime("%H:%M"))
         if self.break_for:
             output += " with beak for " +  self.break_for.name
         
         total_min = self.total_min
-        output += ", total: %d:%02d" % (total_min//60, total_min%60) 
+        if total_min:
+            output += ", total: %d:%02d" % (total_min // 60, total_min % 60)
             
         return output
 
