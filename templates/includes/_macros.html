@@ -5,7 +5,7 @@
 
 {% macro break_select(name, entry) -%}
 <select name="{{name}}" id="{{name}}">
-	<option>&nbsp;</option>
+	<option value="">&nbsp;</option>
 	{%- for b in breaks %}
 	<option {% if entry.break_for and entry.break_for.id == b.id %}selected{% endif %} value="{{b.id}}" >{{b.name}}</option>
 	{% endfor -%}

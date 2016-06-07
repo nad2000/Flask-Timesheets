@@ -10,6 +10,13 @@ from forms import ExtendedLoginForm, TimeSheetForm
 
 security = Security(app, user_datastore, login_form=ExtendedLoginForm)
 
+def str_to_date(str):
+    return datetime.strptime(str, '%Y-%m-%d').date()
+
+def str_to_time(str):
+    return datetime.strptime(str, '%H:%M').time()
+    
+    
 class AppModelView(ModelView):
     """
     Admin Model view customization according to
@@ -86,6 +93,14 @@ def total_time(entry):
         return "%d:%02d" % (total_min // 60, total_min % 60)
 
 
+@app.template_filter('hhmm')
+def hhmm(time):
+    """
+    textual representation of time in format HH:MM
+    """
+    return time.strftime("%H:%M") if time else ''
+        
+        
 # views -- these are the actual mappings of url to view function
 @app.route('/')
 @login_required
@@ -93,8 +108,8 @@ def homepage():
     return render_template("empty.html")
 
     
-@app.route("/timesheet/<date:week_ending_date>")
-@app.route("/timesheet/")    
+@app.route("/timesheet/<date:week_ending_date>", methods=["GET", "POST"])
+@app.route("/timesheet/", methods=["GET", "POST"])    
 @login_required
 def timesheet(week_ending_date=None):
     if week_ending_date is None:
@@ -103,6 +118,26 @@ def timesheet(week_ending_date=None):
     breaks = Break.select(Break.id, Break.name).execute()
     
     form = TimeSheetForm()
+    
+    if form.validate_on_submit():
+        for row_idx in range(7):
+            row = {k.split(':')[1]: request.form[k] for k in request.form.keys() if k.startswith("%d:" % row_idx)}
+            if row["id"] and row["id"] != "None":  ## Update the row
+                entry = Entry.get(id=int(row["id"]))
+                entry.started_at=str_to_time(row["started_at"])
+                entry.finished_at=str_to_time(row["finished_at"])
+                entry.break_for=Break.get(id=int(row["break_id"])) if row["break_id"] else None
+                entry.save()
+            elif row["started_at"] and row["started_at"] != "None" and row["finished_at"] and row["finished_at"] != "None":  ## Create a new entry
+                row_date = week_ending_date - timedelta(days=(6-row_idx))
+                entry = Entry(
+                    date=row_date,
+                    user=User.get(id=current_user.id),
+                    started_at=str_to_time(row["started_at"]),
+                    finished_at=str_to_time(row["finished_at"]),
+                    break_for=Break.get(id=int(row["break_id"])) if row["break_id"] else None
+                )
+                entry.save()
     
     timesheet = Entry.get_user_timesheet(
         user=current_user, 
