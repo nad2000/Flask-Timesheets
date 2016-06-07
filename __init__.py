@@ -8,35 +8,24 @@ from peewee import SqliteDatabase
 from werkzeug.routing import BaseConverter
 from flask.ext.bcrypt import Bcrypt
 from flask.ext.security.utils import encrypt_password
-from datetime import date, timedelta, datetime
+from datetime import date, timedelta as _timedelta, datetime
 import logging
 
-# def login_required(handler):
-
-    # @wraps(handler)
-    # def decorated_function(*args, **kwargs):
-        # if session.get("username") is None:
-            # return redirect(url_for("login", next=request.url))
-        # else:
-            # return handler(*args, **kwargs)
-    # return decorated_function
-
-
-# def author_required(handler):
-
-    # @wraps(handler)
-    # def decorated_function(*args, **kwargs):
-        # if session.get("username") is None:
-            # return redirect(url_for("login", next=request.url))
-        # elif session.get("is_author") is None:
-            # return abort(403)
-        # else:
-            # return handler(*args, **kwargs)
-    # return decorated_function
+class timedelta(_timedelta):
+    
+    def __str__(self):
+        """
+        String representation in form of "HH:MM"
+        """
+        hours = self.seconds // 3600
+        minutes = (self.seconds % 3600) // 60
+        return "%d:%02d" % (hours, minutes)
+        
 
 def current_week_ending_date():
     return date.today() - timedelta(days=(7 - date.today().weekday()))
 
+    
 def week_ending_dates(weeks=7):
    
     week_day_date = current_week_ending_date()

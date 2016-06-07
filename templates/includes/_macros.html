@@ -3,13 +3,6 @@
 <li {% if endpoint == active_page %}class="active"{% endif %}><a href="{{ url_for(endpoint) }}">{{caption}}</a></li>	
 {%- endmacro %}
 
-{% macro total_time(entry) %}
-{% set total_min = entry.total_min %}
-{% if total_min %}
-{{ "%d:%02d" % (total_min // 60, total_min % 60) }}
-{% endif %}
-{% endmacro %}
-
 {% macro break_select(name, entry) -%}
 <select name="{{name}}" id="{{name}}">
 	<option>&nbsp;</option>

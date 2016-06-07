@@ -23,7 +23,6 @@ if os.path.exists(_db.database):
 create_tables()
 
 # Breaks:
-
 for code, name, length in (
     ("5H", "5 hrs", 300),
     ("HH", "1/2 hr", 30),
@@ -101,12 +100,12 @@ for id, (username, email, first_name, last_name) in enumerate((
     
 # Timesheet entires
 week_dates = list(week_day_dates())
-for user, day in product(User.select(), week_dates):
+for no, (user, day) in enumerate(product(User.select(), week_dates)):
     entry = Entry(
         date = day,
         user = user,
-        started_at = time(7, user.id*10 % 60, 0),
-        finished_at = time(16, user.id*7 % 60, 0),
-        break_for = Break.get(id=user.id*7 % 20 + 1)
+        started_at = time(7, no*10 % 60, 0),
+        finished_at = time(16, no*7 % 60, 0),
+        break_for = Break.get(id=no % 20 + 1)
     )
     entry.save()

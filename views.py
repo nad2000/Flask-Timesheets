@@ -1,4 +1,4 @@
-from flask_timesheets import app, db, admin, ModelView, current_user, current_week_ending_date, week_ending_dates
+from flask_timesheets import app, db, admin, ModelView, current_user, current_week_ending_date, week_ending_dates, timedelta
 from flask import g, render_template, redirect, flash, url_for, session, abort, request
 from models import User, Role, Company, Break, Entry, user_datastore
 from peewee import IntegrityError
@@ -13,7 +13,6 @@ security = Security(app, user_datastore, login_form=ExtendedLoginForm)
 class AppModelView(ModelView):
     """
     Admin Model view customization according to
-    
     """
 
     column_formatters = dict(
@@ -54,33 +53,6 @@ admin.add_view(AppModelView(Role))
 admin.add_view(AppModelView(Company))
 admin.add_view(AppModelView(Entry))
 
-# def auth_user(user):
-    # """
-    # this function allows us to mark a user as being logged-in by setting some values in the session data
-    # """
-    # session['logged_in'] = True
-    # session['user_id'] = user.id
-    # session['username'] = user.username
-    # flash('You are logged in as %s' % (user.username))
-
-
-# def get_current_user():
-    # """
-    # get the user from the session
-    # """
-    # if session.get('logged_in'):
-        # return User.get(User.id == session['user_id'])
-
-# view decorator which indicates that the requesting user must be authenticated
-# before they can access the view.  it checks the session to see if they're
-# logged in, and if not redirects them to the login view.
-# def login_required(f):
-    # @wraps(f)
-    # def inner(*args, **kwargs):
-        # if not session.get('logged_in'):
-            # return redirect(url_for('twitter_login'))
-        # return f(*args, **kwargs)
-    # return inner
 
 # given a template and a SelectQuery instance, render a paginated list of
 # objects from the query inside the template
@@ -92,6 +64,7 @@ def object_list(template_name, qr, var_name='object_list', **kwargs):
     kwargs[var_name] = qr.paginate(kwargs['page'])
     return render_template(template_name, **kwargs)
 
+    
 # retrieve a single object matching the specified query or 404 -- this uses the
 # shortcut "get" method on model, which retrieves a single object or raises a
 # DoesNotExist exception if no matching object exists
@@ -101,13 +74,16 @@ def get_object_or_404(model, *expressions):
         return model.get(*expressions)
     except model.DoesNotExist:
         abort(404)
+        
 
-# custom template filter -- flask allows you to define these functions and then
-# they are accessible in the template -- this one returns a boolean whether the
-# given user is following another user.
-@app.template_filter('is_following')
-def is_following(from_user, to_user):
-    return from_user.is_following(to_user)
+@app.template_filter('total_time')
+def total_time(entry):
+    """
+    textual representation of total work time
+    """
+    total_min = entry.total_min
+    if total_min:
+        return "%d:%02d" % (total_min // 60, total_min % 60)
 
 
 # views -- these are the actual mappings of url to view function
@@ -115,6 +91,7 @@ def is_following(from_user, to_user):
 @login_required
 def homepage():
     return render_template("empty.html")
+
     
 @app.route("/timesheet/<date:week_ending_date>")
 @app.route("/timesheet/")    
@@ -125,33 +102,36 @@ def timesheet(week_ending_date=None):
       
     breaks = Break.select(Break.id, Break.name).execute()
     
+    form = TimeSheetForm()
+    
     timesheet = Entry.get_user_timesheet(
         user=current_user, 
         week_ending_date=week_ending_date)
     
     return render_template("timesheet.html",
-        timesheet=timesheet, 
+        timesheet=timesheet,
+        form=form,
         breaks=breaks,
         week_ending_date=week_ending_date, 
         week_ending_dates=week_ending_dates())
         
     
     
-@app.route("/approve/<user_name>/<date:week_start_date>")
+@app.route("/approve/<user_name>/<date:week_ending_date>")
 @app.route("/approve/<user_name>")
 @app.route("/approve/")
 @login_required
 @roles_required('approver')
-def approve(user_name=None, week_start_date=None):
+def approve(user_name=None, week_ending_date=None):
     # TODO: handle dates
     return render_template("approve.html")
 
-@app.route("/report/<user_name>/<date:week_start_date>")
+@app.route("/report/<user_name>/<date:week_ending_date>")
 @app.route("/report/<user_name>")
 @app.route("/report/")
 @login_required
 @roles_required('approver')
-def report(user_name=None, week_start_date=None):
+def report(user_name=None, week_ending_date=None):
     # TODO: handle dates
     return render_template("empty.html")
 
