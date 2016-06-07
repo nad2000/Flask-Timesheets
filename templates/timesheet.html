@@ -24,8 +24,8 @@
 		<div class="row">
 			<input type="hidden" name="{{ '%d:id' % loop.index0 }}" id="{{ '%d:id' % loop.index0 }}" value="{{e.id}}" />
 			<div class="col-md-3">{{e.date.strftime("%A")}}&nbsp;({{e.date}})</div>
-			<div class="col-md-1"><input name="{{ '%d:started_at' % loop.index0 }}" id="{{ '%d:started_at' % loop.index0 }}" value="{{e.started_at|hhmm}}" /></div>
-			<div class="col-md-1"><input name="{{ '%d:finished_at' % loop.index0 }}" id="{{ '%d:finished_at' % loop.index0 }}" value="{{e.finished_at|hhmm}}" /></div>
+			<div class="col-md-1"><input placeholder="hh:mm" name="{{ '%d:started_at' % loop.index0 }}" id="{{ '%d:started_at' % loop.index0 }}" value="{{e.started_at|hhmm}}" /></div>
+			<div class="col-md-1"><input placeholder="hh:mm" name="{{ '%d:finished_at' % loop.index0 }}" id="{{ '%d:finished_at' % loop.index0 }}" value="{{e.finished_at|hhmm}}" /></div>
 			<div class="col-md-2"><span>{{macros.break_select('%d:break_id' % loop.index0, e)}}</span></div>
 			<div class="col-md-1">{{e|total_time}}</div>
 		</div>
@@ -38,14 +38,15 @@
 {% block footer %}
 	{{ super() }}
 	<script>
-	$(function(){
+	$(document).ready(function(){
+		/* Select weeek ending */
 		$('#week-ending-date').on('change', function () {
 			var selcted_date = $(this).val();
 			if (selcted_date) {
 				window.location = "{{ url_for(request.endpoint) }}"+selcted_date;
 			}
 			return false;
-		});
+		});	
 	});	
 	</script>
 {% endblock %}
