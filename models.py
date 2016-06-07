@@ -1,7 +1,8 @@
 from datetime import datetime, timedelta
 from peewee import Model, CharField, DateTimeField, ForeignKeyField, \
     TextField, IntegerField, DateField, TimeField, BooleanField
-from flask_timesheets import db, FlaskDB, app, current_user, current_week_ending_date
+from flask_timesheets import db, FlaskDB, app, current_user, \
+    current_week_ending_date, str_to_time
 from hashlib import md5
 from flask.ext.security import PeeweeUserDatastore, UserMixin, \
     RoleMixin, login_required
@@ -144,6 +145,9 @@ class Entry(db.Model):
 
     @classmethod
     def get_user_timesheet(cls, *, user=None, week_ending_date=None):
+        """
+        Retrievs timesheet entries for a user a week ending on week_ending_date.
+        """
         if user is None:
             user = current_user
             
@@ -169,6 +173,49 @@ class Entry(db.Model):
         ORDER BY "date" ASC""", week_ending_date.isoformat(), user.id)
         return rq.execute()
 
+class TimeSheet(object):
+    
+    def __init__(self, *, user=None, week_ending_date=None):
+        if user is None:
+            user = current_user
+            
+        if week_ending_date is None:
+            week_ending_date = current_week_ending_date()
+    
+        self.user = user
+        self.week_ending_date = week_ending_date
+    
+        self.entries = Entry.get_user_timesheet(user=user, week_ending_date=week_ending_date)
+        
+    def update(self, rows):
+        """
+        Update timesheet entries or create new ones based on the submitted data
+        based on the list of row values submitted by the user. rows - a list of 
+        dict of update data
+        """
+        for idx, (old, new) in enumerate(zip(self.entries, rows)):
+            if not new["id"] or new["id"] == "None":
+                if not new["started_at"] or new["started_at"] == "None" or not new["finished_at"] or new["finished_at"] == "None":  ## Create a new entry
+                    continue  ## skip if there is no basic data
+                    
+                old.user = User.get(id=current_user.id)
+                row_date = self.week_ending_date - timedelta(days=(6-idx))
+                old.is_approved = False
+                
+                
+            started_at = str_to_time(new["started_at"])
+            finished_at = str_to_time(new["finished_at"])
+            break_for = Break.get(id=int(new["break_id"])) if new["break_id"] else None
+
+            if (old.started_at != started_at or old.finished_at != finished_at
+                    or old.break_for != break_for):  ## update only if there are changes:
+                old.started_at = started_at
+                old.finished_at = finished_at
+                if break_for:
+                    old.break_for = break_for
+                old.modified_at = datetime.now()
+                old.save()
+    
         
 # Setup Flask-Security
 user_datastore = PeeweeUserDatastore(db, User, Role, UserRoles)

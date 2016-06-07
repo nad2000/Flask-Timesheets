@@ -22,6 +22,15 @@ class timedelta(_timedelta):
         return "%d:%02d" % (hours, minutes)
         
 
+
+def str_to_date(str):
+    return datetime.strptime(str, '%Y-%m-%d').date()
+
+
+def str_to_time(str):
+    return datetime.strptime(str, '%H:%M').time()
+    
+        
 def current_week_ending_date():
     return date.today() + timedelta(days=(6 - date.today().weekday()))
 

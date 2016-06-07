@@ -20,7 +20,7 @@
   
 	<form action="" method="POST" >
 		{{ form.hidden_tag() }}
-		{% for e in timesheet %}
+		{% for e in timesheet.entries %}
 		<div class="row">
 			<input type="hidden" name="{{ '%d:id' % loop.index0 }}" id="{{ '%d:id' % loop.index0 }}" value="{{e.id}}" />
 			<div class="col-md-3">{{e.date.strftime("%A")}}&nbsp;({{e.date}})</div>
@@ -37,7 +37,6 @@
 {% endblock %}
 {% block footer %}
 	{{ super() }}
-	<script src="{{ url_for('static', filename='selectize.js/js/standalone/selectize.min.js') }}"></script>
 	<script>
 	$(function(){
 		$('#week-ending-date').on('change', function () {

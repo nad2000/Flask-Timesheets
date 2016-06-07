@@ -1,6 +1,6 @@
 from flask_timesheets import app, db, admin, ModelView, current_user, current_week_ending_date, week_ending_dates, timedelta
 from flask import g, render_template, redirect, flash, url_for, session, abort, request
-from models import User, Role, Company, Break, Entry, user_datastore
+from models import User, Role, Company, Break, Entry, TimeSheet, user_datastore
 from peewee import IntegrityError
 from functools import wraps
 from datetime import datetime
@@ -9,13 +9,7 @@ from flask.ext.security import login_required, roles_required, Security
 from forms import ExtendedLoginForm, TimeSheetForm
 
 security = Security(app, user_datastore, login_form=ExtendedLoginForm)
-
-def str_to_date(str):
-    return datetime.strptime(str, '%Y-%m-%d').date()
-
-def str_to_time(str):
-    return datetime.strptime(str, '%H:%M').time()
-    
+   
     
 class AppModelView(ModelView):
     """
@@ -109,39 +103,23 @@ def homepage():
 
     
 @app.route("/timesheet/<date:week_ending_date>", methods=["GET", "POST"])
-@app.route("/timesheet/", methods=["GET", "POST"])    
+@app.route("/timesheet/")    
 @login_required
 def timesheet(week_ending_date=None):
     if week_ending_date is None:
         week_ending_date = current_week_ending_date()
+        return redirect(url_for("timesheet", week_ending_date=week_ending_date))
       
     breaks = Break.select(Break.id, Break.name).order_by(Break.minutes).execute()
     
     form = TimeSheetForm()
-    
-    if form.validate_on_submit():
-        for row_idx in range(7):
-            row = {k.split(':')[1]: request.form[k] for k in request.form.keys() if k.startswith("%d:" % row_idx)}
-            if row["id"] and row["id"] != "None":  ## Update the row
-                entry = Entry.get(id=int(row["id"]))
-                entry.started_at=str_to_time(row["started_at"])
-                entry.finished_at=str_to_time(row["finished_at"])
-                entry.break_for=Break.get(id=int(row["break_id"])) if row["break_id"] else None
-                entry.save()
-            elif row["started_at"] and row["started_at"] != "None" and row["finished_at"] and row["finished_at"] != "None":  ## Create a new entry
-                row_date = week_ending_date - timedelta(days=(6-row_idx))
-                entry = Entry(
-                    date=row_date,
-                    user=User.get(id=current_user.id),
-                    started_at=str_to_time(row["started_at"]),
-                    finished_at=str_to_time(row["finished_at"]),
-                    break_for=Break.get(id=int(row["break_id"])) if row["break_id"] else None
-                )
-                entry.save()
-    
-    timesheet = Entry.get_user_timesheet(
+    timesheet = TimeSheet(
         user=current_user, 
         week_ending_date=week_ending_date)
+    
+    if form.validate_on_submit():
+        rows = [{k.split(':')[1]: request.form[k] for k in request.form.keys() if k.startswith("%d:" % row_idx)} for row_idx in range(7)]
+        timesheet.update(rows)
     
     return render_template("timesheet.html",
         timesheet=timesheet,
@@ -149,7 +127,6 @@ def timesheet(week_ending_date=None):
         breaks=breaks,
         week_ending_date=week_ending_date, 
         week_ending_dates=week_ending_dates())
-        
     
     
 @app.route("/approve/<user_name>/<date:week_ending_date>")
