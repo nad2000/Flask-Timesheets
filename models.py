@@ -153,7 +153,7 @@ class Entry(db.Model):
         rq = RawQuery(cls, """
         WITH
             daynums(num) AS (VALUES (6),(5),(4),(3),(2),(1),(0)),
-            week(day) AS (SELECT date(?, '+'||num||' day')FROM daynums)
+            week(day) AS (SELECT date(?, '-'||num||' day') FROM daynums)
         SELECT
             id,
             day as date,

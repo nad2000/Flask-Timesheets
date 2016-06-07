@@ -23,7 +23,7 @@ class timedelta(_timedelta):
         
 
 def current_week_ending_date():
-    return date.today() - timedelta(days=(7 - date.today().weekday()))
+    return date.today() + timedelta(days=(6 - date.today().weekday()))
 
     
 def week_ending_dates(weeks=7):

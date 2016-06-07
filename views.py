@@ -115,7 +115,7 @@ def timesheet(week_ending_date=None):
     if week_ending_date is None:
         week_ending_date = current_week_ending_date()
       
-    breaks = Break.select(Break.id, Break.name).execute()
+    breaks = Break.select(Break.id, Break.name).order_by(Break.minutes).execute()
     
     form = TimeSheetForm()
     
