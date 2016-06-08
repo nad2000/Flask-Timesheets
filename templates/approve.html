@@ -1,8 +1,60 @@
 {% extends "base.html" %}
+
 {% block content %}
-  <h2>Timesheets</h2>
-  <p>Welcome to the site!</p>
-  <!-- filling the timesheets -->
   
-  {{ active_page }}
+	<div class="row">
+		<div class="col-md-2">
+			<label for="week-ending-date"><span class="label label-primary">Week ending on:</span></label>
+			<select id="week-ending-date" name="week-ending-date" class="form-control">
+				{%- for wed in week_ending_dates %}
+				<option {% if wed==week_ending_date %}selected{% endif %} value="{{wed.isoformat()}}">{{wed.isoformat()}}</option>
+				{% endfor -%}
+			</select>
+		</div>
+		<div class="col-md-2">
+			<label for="user"><span class="label label-primary">User:</span></label>
+			<select id="user" name="week-ending-date" class="form-control">
+				{%- for u in users %}
+				<option {% if u == selected_user %}selected{% endif %} value="{{u.user_name}}">{{u.full_name}}</option>
+				{% endfor -%}
+			</select>
+		</div>
+	</div>
+	
+	<div class="row">
+		<div class="col-md-6">
+		</div>
+	</div>
+  
+	<form action="" method="POST" >
+		{{ form.hidden_tag() }}
+		{% for e in entries %}
+		<div class="row">
+			<input type="hidden" name="{{ '%d:id' % loop.index0 }}" id="{{ '%d:id' % loop.index0 }}" value="{{e.id}}" />
+			<div class="col-md-3">{{e.date.strftime("%A")}}&nbsp;({{e.date}})</div>
+			<div class="col-md-1"><input placeholder="hh:mm" name="{{ '%d:started_at' % loop.index0 }}" id="{{ '%d:started_at' % loop.index0 }}" value="{{e.started_at|hhmm}}" /></div>
+			<div class="col-md-1"><input placeholder="hh:mm" name="{{ '%d:finished_at' % loop.index0 }}" id="{{ '%d:finished_at' % loop.index0 }}" value="{{e.finished_at|hhmm}}" /></div>
+			<div class="col-md-2"><span>{{macros.break_select('%d:break_id' % loop.index0, e)}}</span></div>
+			<div class="col-md-1">{{e|total_time}}</div>
+		</div>
+		{% endfor %}
+
+		<input type="submit" value="Submit!" />
+	</form>  
+  
+{% endblock %}
+{% block footer %}
+	{{ super() }}
+	<script>
+	$(document).ready(function(){
+		/* Select weeek ending */
+		$('#week-ending-date').on('change', function () {
+			var selcted_date = $(this).val();
+			if (selcted_date) {
+				window.location = "{{ url_for(request.endpoint) }}"+selcted_date;
+			}
+			return false;
+		});	
+	});	
+	</script>
 {% endblock %}

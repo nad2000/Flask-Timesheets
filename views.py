@@ -6,7 +6,7 @@ from functools import wraps
 from datetime import datetime
 from hashlib import md5
 from flask.ext.security import login_required, roles_required, Security
-from forms import ExtendedLoginForm, TimeSheetForm
+from forms import ExtendedLoginForm, TimeSheetForm, ApprovingForm
 
 security = Security(app, user_datastore, login_form=ExtendedLoginForm)
    
@@ -130,14 +130,33 @@ def timesheet(week_ending_date=None):
     
     
 @app.route("/approve/<user_name>/<date:week_ending_date>")
+@app.route("/approve/<date:week_ending_date>")
 @app.route("/approve/<user_name>")
 @app.route("/approve/")
 @login_required
 @roles_required('approver')
 def approve(user_name=None, week_ending_date=None):
-    # TODO: handle dates
-    return render_template("approve.html")
+    breaks = Break.select(Break.id, Break.name).order_by(Break.minutes).execute()
+    users = User.select().order_by(
+        User.first_name, User.last_name).execute()
 
+    selected_user = User.get(User.user_name == user_name) if user_name else None
+
+    form = ApprovingForm()
+    entries = Entry.get_for_approving(
+                user = selected_user,
+                week_ending_date=week_ending_date)
+    
+    return render_template("approve.html",
+        entries=entries,
+        form=form,
+        breaks=breaks,
+        selected_user = selected_user,
+        users = users,
+        week_ending_date=week_ending_date,
+        week_ending_dates=week_ending_dates())
+
+        
 @app.route("/report/<user_name>/<date:week_ending_date>")
 @app.route("/report/<user_name>")
 @app.route("/report/")

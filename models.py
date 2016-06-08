@@ -173,6 +173,25 @@ class Entry(db.Model):
         ORDER BY "date" ASC""", week_ending_date.isoformat(), user.id)
         return rq.execute()
 
+
+    @classmethod
+    def get_for_approving(cls, *, user=None, week_ending_date=None):
+        """
+        Retrievs timesheet entries for approval
+        """
+        query = Entry.select()
+
+        if user:
+            query = query.where(Entry.user_id == user.id)
+        
+        if week_ending_date:
+            week_start_date = week_ending_date - timedelta(days=7)
+            query = query.where((Entry.date >= week_start_date)
+                        & (Entry.date <= week_ending_date))
+
+        return query.order_by(Entry.date).limit(100).execute()
+
+        
 class TimeSheet(object):
     
     def __init__(self, *, user=None, week_ending_date=None):

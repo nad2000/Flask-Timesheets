@@ -8,6 +8,11 @@ from werkzeug.datastructures import MultiDict
 class ExtendedLoginForm(LoginForm):
     email = StringField('Username or Email Address', [InputRequired()])
 
+
+class ApprovingForm(Form):
+    pass
+    
+    
 class EntryForm(Form):
 
     # breaks = list(Break.select(Break.id, Break.name).tuples())
