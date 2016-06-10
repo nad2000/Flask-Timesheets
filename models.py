@@ -105,7 +105,7 @@ class Entry(db.Model):
     started_at = TimeField()
     finished_at = TimeField()
     modified_at = DateTimeField(default=datetime.now)
-    comment = TextField(null=True)
+    comment = TextField(null=True, default="")
     break_for = ForeignKeyField(Break, related_name='break_for', null=True)
     is_approved = BooleanField(default=False)
     break_length = property(lambda self: self.break_for.minutes if self.break_for else 0)
