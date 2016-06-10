@@ -130,7 +130,6 @@ def timesheet(week_ending_date=None):
     
     
 @app.route("/approve/<username>/<date:week_ending_date>")
-@app.route("/approve/<date:week_ending_date>")
 @app.route("/approve/<username>")
 @app.route("/approve/")
 @login_required
