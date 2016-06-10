@@ -28,7 +28,7 @@
   
 	<form action="" method="POST" >
 		{{ form.hidden_tag() }}
-		{% for e in entries %}
+		{% for e in timesheet.entries %}
 		<div class="row">
 			<input type="hidden" name="{{ '%d:id' % loop.index0 }}" id="{{ '%d:id' % loop.index0 }}" value="{{e.id}}" />
 			<div class="col-md-3">{{e.date.strftime("%A")}}&nbsp;({{e.date}})</div>

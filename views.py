@@ -129,26 +129,41 @@ def timesheet(week_ending_date=None):
         week_ending_dates=week_ending_dates())
     
     
-@app.route("/approve/<user_name>/<date:week_ending_date>")
+@app.route("/approve/<username>/<date:week_ending_date>")
 @app.route("/approve/<date:week_ending_date>")
-@app.route("/approve/<user_name>")
+@app.route("/approve/<username>")
 @app.route("/approve/")
 @login_required
 @roles_required('approver')
-def approve(user_name=None, week_ending_date=None):
+def approve(username=None, week_ending_date=None):
+    if week_ending_date is None or username is None:
+    
+        # grab first user and/or the curret week ending date:
+        if week_ending_date is None:
+            week_ending_date = current_week_ending_date()
+            
+        if username is None:
+            username = User.select().order_by(
+                User.first_name, User.last_name).limit(1).execute().next().username
+
+        return redirect(url_for(
+                            "approve",
+                            username=username, 
+                            week_ending_date=week_ending_date))
+
     breaks = Break.select(Break.id, Break.name).order_by(Break.minutes).execute()
     users = User.select().order_by(
         User.first_name, User.last_name).execute()
 
-    selected_user = User.get(User.user_name == user_name) if user_name else None
+    selected_user = User.get(User.username == username) if username else None
 
     form = ApprovingForm()
-    entries = Entry.get_for_approving(
-                user = selected_user,
-                week_ending_date=week_ending_date)
+    timesheet = TimeSheet(
+        user=current_user, 
+        week_ending_date=week_ending_date)
     
     return render_template("approve.html",
-        entries=entries,
+        timesheet=timesheet,
         form=form,
         breaks=breaks,
         selected_user = selected_user,
@@ -157,12 +172,12 @@ def approve(user_name=None, week_ending_date=None):
         week_ending_dates=week_ending_dates())
 
         
-@app.route("/report/<user_name>/<date:week_ending_date>")
-@app.route("/report/<user_name>")
+@app.route("/report/<username>/<date:week_ending_date>")
+@app.route("/report/<username>")
 @app.route("/report/")
 @login_required
 @roles_required('approver')
-def report(user_name=None, week_ending_date=None):
+def report(username=None, week_ending_date=None):
     # TODO: handle dates
     return render_template("empty.html")
 
