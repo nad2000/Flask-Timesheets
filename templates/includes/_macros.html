@@ -3,8 +3,8 @@
 <li {% if endpoint == active_page %}class="active"{% endif %}><a href="{{ url_for(endpoint) }}">{{caption}}</a></li>	
 {%- endmacro %}
 
-{% macro break_select(name, entry) -%}
-<select name="{{name}}" id="{{name}}">
+{% macro break_select(name, entry, row_disabled='') -%}
+<select name="{{name}}" id="{{name}}" {{row_disabled}}>
 	<option value="">&nbsp;</option>
 	{%- for b in breaks %}
 	<option {% if entry.break_for and entry.break_for.id == b.id %}selected{% endif %} value="{{b.id}}" >{{b.name}}</option>
