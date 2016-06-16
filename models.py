@@ -105,6 +105,7 @@ class Entry(db.Model):
     started_at = TimeField()
     finished_at = TimeField()
     modified_at = DateTimeField(default=datetime.now)
+    approved_at = DateTimeField(null=True)
     comment = TextField(null=True, default="")
     break_for = ForeignKeyField(Break, related_name='break_for', null=True)
     is_approved = BooleanField(default=False)
@@ -158,17 +159,7 @@ class Entry(db.Model):
         WITH
             daynums(num) AS (VALUES (6),(5),(4),(3),(2),(1),(0)),
             week(day) AS (SELECT date(?, '-'||num||' day') FROM daynums)
-        SELECT
-            id,
-            day as date,
-            finished_at,
-            started_at,
-            user_id,
-            approver_id,
-            modified_at,
-            break_for_id,
-            is_approved,
-            comment
+        SELECT entry.*
         FROM week LEFT JOIN entry ON "date" = day AND user_id = ?
         ORDER BY "date" ASC""", week_ending_date.isoformat(), user.id)
         return rq.execute()
@@ -234,6 +225,29 @@ class TimeSheet(object):
                     old.break_for = break_for
                 old.modified_at = datetime.now()
                 old.save()
+    
+    def approve(self, rows):
+        """
+        Approve timesheet entriesbased on the list of row values 
+        submitted by the user. rows - a list of dict of update data
+        """
+        for idx, (entry, row) in enumerate(zip(self.entries, rows)):
+        
+            if not entry.id:
+                continue
+            
+            if "is_approved" in row:
+                entry.is_approved = True
+                entry.approver = current_user.id
+                entry.comment = row["comment"]
+                entry.approved_at = datetime.now()
+            else:
+                entry.is_approved = False
+                entry.approver = None
+                entry.comment = row["comment"]
+                entry.approved_at = None
+                
+            entry.save()
     
         
 # Setup Flask-Security

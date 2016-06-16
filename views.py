@@ -129,7 +129,7 @@ def timesheet(week_ending_date=None):
         week_ending_dates=week_ending_dates())
     
     
-@app.route("/approve/<username>/<date:week_ending_date>")
+@app.route("/approve/<username>/<date:week_ending_date>", methods=["GET", "POST"])
 @app.route("/approve/<username>")
 @app.route("/approve/")
 @login_required
@@ -160,7 +160,11 @@ def approve(username=None, week_ending_date=None):
     timesheet = TimeSheet(
         user=current_user, 
         week_ending_date=week_ending_date)
-    
+
+    if form.validate_on_submit():
+        rows = [{k.split(':')[1]: request.form[k] for k in request.form.keys() if k.startswith("%d:" % row_idx)} for row_idx in range(7)]
+        timesheet.approve(rows)
+        
     return render_template("approve.html",
         timesheet=timesheet,
         form=form,
