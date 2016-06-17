@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block content %}
+  
+	<div class="row">
+		<div class="col-md-2">
+			<label for="company"><span class="label label-primary">Company:</span></label>
+			<select id="company" name="company" class="form-control">
+				{%- for c in companies %}
+				<option {% if c == selected_company %}selected{% endif %} value="{{c.code}}">{{c.name}}</option>
+				{% endfor -%}
+			</select>
+		</div>
+		<div class="col-md-2">
+			<label for="from-date"><span class="label label-primary">Date From:</span></label>
+			<select id="from-date" name="from-date" class="form-control">
+				{%- for wed in week_ending_dates %}
+				<option {% if wed==from_date %}selected{% endif %} value="{{wed.isoformat()}}">{{wed.isoformat()}}</option>
+				{% endfor -%}
+			</select>
+		</div>
+		<div class="col-md-2">
+			<label for="to-date"><span class="label label-primary">Date To:</span></label>
+			<select id="to-date" name="to-date" class="form-control">
+				{%- for wed in week_ending_dates %}
+				<option {% if wed==to_date %}selected{% endif %} value="{{wed.isoformat()}}">{{wed.isoformat()}}</option>
+				{% endfor -%}
+			</select>
+		</div>
+	</div>
+	
+  
+	{% for e in entries %}
+		{%- if e.started_at %}
+			{% set row_disabled = '' %}
+		{% else %}
+			{% set row_disabled = "disabled" %}
+		{% endif -%}
+		<div class="row">
+			<div class="col-md-1">{{e.user.code}}</div>
+			<div class="col-md-1">{{e.user.full_name}}</div>
+			<div class="col-md-1">{{e.date}}</div>
+		</div>
+	{% endfor %}
+  
+{% endblock %}
+{% block footer %}
+	{{ super() }}
+	<script>
+	$(document).ready(function(){
+		/* Select weeek ending */
+		$('#week-ending-date').on('change', function () {
+			var selcted_date = $(this).val();
+			if (selcted_date) {
+				window.location = "{{ url_for(request.endpoint, company_code=selected_company.code) }}"+'/'+selcted_date;
+			}
+			return false;
+		});	
+	});	
+	</script>
+{% endblock %}

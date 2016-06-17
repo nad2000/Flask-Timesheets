@@ -175,14 +175,25 @@ def approve(username=None, week_ending_date=None):
         week_ending_dates=week_ending_dates())
 
         
-@app.route("/report/<username>/<date:week_ending_date>")
-@app.route("/report/<username>")
+@app.route("/report/<company_code>/<date:from_date>/<date:to_date>")
+@app.route("/report/<company_code>/<date:from_date>")
+@app.route("/report/<company_code>")
 @app.route("/report/")
 @login_required
-@roles_required('approver')
-def report(username=None, week_ending_date=None):
+@roles_required('approver', 'admin')
+def report(company_code=None, from_date=None, to_date=None):
+    selected_company = Company.get(code=company_code) if company_code else None
+    companies = Company.select().order_by(
+        Company.name).execute()
     # TODO: handle dates
-    return render_template("empty.html")
+    entries = Entry.select().join(User, on=(User.id == Entry.user_id)).limit(10).execute()
+    return render_template("report.html",
+        entries=entries,
+        from_date=from_date,
+        to_date=to_date,
+        selected_company = selected_company,
+        companies = companies,
+        week_ending_dates=week_ending_dates())
 
 
 # @app.route('/private/')
