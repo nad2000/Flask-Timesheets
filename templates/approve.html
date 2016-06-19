@@ -13,7 +13,7 @@
 		</div>
 		<div class="col-md-2">
 			<label for="user"><span class="label label-primary">User:</span></label>
-			<select id="user" name="week-ending-date" class="form-control">
+			<select id="user" name="user" class="form-control">
 				{%- for u in users %}
 				<option {% if u == selected_user %}selected{% endif %} value="{{u.username}}">{{u.full_name}}</option>
 				{% endfor -%}
@@ -56,9 +56,16 @@
 	$(document).ready(function(){
 		/* Select weeek ending */
 		$('#week-ending-date').on('change', function () {
-			var selcted_date = $(this).val();
-			if (selcted_date) {
-				window.location = "{{ url_for(request.endpoint, username=selected_user.username) }}"+'/'+selcted_date;
+			var selected_date = $(this).val();
+			if (selected_date) {
+				window.location = "{{ url_for(request.endpoint, username=selected_user.username) }}/" + selected_date;
+			}
+			return false;
+		});	
+		$('#user').on('change', function () {
+			var selected_user = $(this).val();
+			if (selected_user) {
+				window.location = "{{ url_for(request.endpoint) }}" + selected_user + "/{{week_ending_date}}";
 			}
 			return false;
 		});	

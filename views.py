@@ -158,7 +158,7 @@ def approve(username=None, week_ending_date=None):
 
     form = ApprovingForm()
     timesheet = TimeSheet(
-        user=current_user, 
+        user=selected_user, 
         week_ending_date=week_ending_date)
 
     if form.validate_on_submit():
