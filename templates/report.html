@@ -6,6 +6,7 @@
 		<div class="col-md-2">
 			<label for="company"><span class="label label-primary">Company:</span></label>
 			<select id="company" name="company" class="form-control">
+				<option value="">&nbsp;</option>
 				{%- for c in companies %}
 				<option {% if c == selected_company %}selected{% endif %} value="{{c.code}}">{{c.name}}</option>
 				{% endfor -%}
@@ -14,6 +15,7 @@
 		<div class="col-md-2">
 			<label for="from-date"><span class="label label-primary">Date From:</span></label>
 			<select id="from-date" name="from-date" class="form-control">
+				<option value="">&nbsp;</option>
 				{%- for wed in week_ending_dates %}
 				<option {% if wed==from_date %}selected{% endif %} value="{{wed.isoformat()}}">{{wed.isoformat()}}</option>
 				{% endfor -%}
@@ -22,8 +24,9 @@
 		<div class="col-md-2">
 			<label for="to-date"><span class="label label-primary">Date To:</span></label>
 			<select id="to-date" name="to-date" class="form-control">
-				{%- for wed in week_ending_dates %}
-				<option {% if wed==to_date %}selected{% endif %} value="{{wed.isoformat()}}">{{wed.isoformat()}}</option>
+				<option value="">&nbsp;</option>
+				{%- for wsd in week_start_dates %}
+				<option {% if wsd==to_date %}selected{% endif %} value="{{wsd.isoformat()}}">{{wsd.isoformat()}}</option>
 				{% endfor -%}
 			</select>
 		</div>
