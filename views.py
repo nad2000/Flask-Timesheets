@@ -186,7 +186,15 @@ def report(company_code=None, from_date=None, to_date=None):
     companies = Company.select().order_by(
         Company.name).execute()
     # TODO: handle dates
-    entries = Entry.select().join(User, on=(User.id == Entry.user_id)).limit(10).execute()
+    if company_code and from_date and to_date:
+        entries = (Entry.select(Entry, User, Company.code)
+            .join(User, on=User.approved_by).join(Company)
+            .where(
+                (Entry.date >= from_date) & 
+                (Entry.date <= to_date) & 
+                (Company.code == company_code)).execute())
+    else:
+        entries = []
     week_start_dates=(d + timedelta(days=6) for d in week_ending_dates())
     return render_template("report.html",
         entries=entries,

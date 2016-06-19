@@ -40,7 +40,7 @@
 			{% set row_disabled = "disabled" %}
 		{% endif -%}
 		<div class="row">
-			<div class="col-md-1">{{e.user.code}}</div>
+			<div class="col-md-1">{{e.user.workplace.code}}</div>
 			<div class="col-md-1">{{e.user.full_name}}</div>
 			<div class="col-md-1">{{e.date}}</div>
 		</div>
@@ -52,12 +52,14 @@
 	<script>
 	$(document).ready(function(){
 		/* Select weeek ending */
-		$('#week-ending-date').on('change', function () {
-			var selcted_date = $(this).val();
-			if (selcted_date) {
-				window.location = "{{ url_for(request.endpoint, company_code=selected_company.code) }}"+'/'+selcted_date;
-			}
-			return false;
+		$('#company,#from-date,#to-date').each(function() {
+			$(this).on('change', function () {
+				if ($('#company').val() != '' && $('#from-date').val() != '' && $('#to-date').val() != '') {
+					window.location = ("{{ url_for(request.endpoint) }}" + 
+						$('#company').val() + '/' + $('#from-date').val() + '/' + $('#to-date').val());
+				}
+				return false;
+			});
 		});	
 	});	
 	</script>
