@@ -175,13 +175,15 @@ def approve(username=None, week_ending_date=None):
         week_ending_dates=week_ending_dates())
 
         
-@app.route("/report/<company_code>/<date:from_date>/<date:to_date>")
-@app.route("/report/<company_code>/<date:from_date>")
-@app.route("/report/<company_code>")
+@app.route("/report/<date:from_date>/<date:to_date>/<company_code>")
+@app.route("/report/<date:from_date>/<date:to_date>")
 @app.route("/report/")
 @login_required
 @roles_required('approver', 'admin')
 def report(company_code=None, from_date=None, to_date=None):
+
+    include_unapproved = request.args.get("include_unapproved")
+
     selected_company = Company.get(code=company_code) if company_code else None
     companies = Company.select().order_by(
         Company.name).execute()

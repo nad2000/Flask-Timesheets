@@ -51,13 +51,22 @@
 	{{ super() }}
 	<script>
 	$(document).ready(function(){
+	
+		function runReport() {
+			if ($('#from-date').val() != '' && $('#to-date').val() != '') {
+				var url = ("{{ url_for(request.endpoint) }}" + 
+					$('#from-date').val() + '/' + $('#to-date').val());
+					
+				if ($('#company').val() != '') {
+					url += '/' + $('#company').val()
+				}
+				window.location = url;
+			}
+		}
 		/* Select weeek ending */
 		$('#company,#from-date,#to-date').each(function() {
 			$(this).on('change', function () {
-				if ($('#company').val() != '' && $('#from-date').val() != '' && $('#to-date').val() != '') {
-					window.location = ("{{ url_for(request.endpoint) }}" + 
-						$('#company').val() + '/' + $('#from-date').val() + '/' + $('#to-date').val());
-				}
+				runReport();
 				return false;
 			});
 		});	
