@@ -182,23 +182,32 @@ def approve(username=None, week_ending_date=None):
 @roles_required('approver', 'admin')
 def report(company_code=None, from_date=None, to_date=None):
 
-    include_unapproved = request.args.get("include_unapproved")
+    include_unapproved = request.args.get("include_unapproved") is not None
 
     selected_company = Company.get(code=company_code) if company_code else None
     companies = Company.select().order_by(
         Company.name).execute()
-    # TODO: handle dates
-    if company_code and from_date and to_date:
-        entries = (Entry.select(Entry, User, Company.code)
+
+    if from_date and to_date:
+        query = (Entry.select(Entry, User, Company.code)
             .join(User, on=User.approved_by).join(Company)
             .where(
                 (Entry.date >= from_date) & 
-                (Entry.date <= to_date) & 
-                (Company.code == company_code)).execute())
+                (Entry.date <= to_date)))
+                
+        if not include_unapproved:
+            query = query.where(Entry.is_approved == True)
+            
+        if selected_company:
+            query = query.where(Company.code == company_code)
+            
+        entries = query.execute()
     else:
         entries = []
+
     week_start_dates=(d + timedelta(days=6) for d in week_ending_dates())
     return render_template("report.html",
+        include_unapproved=include_unapproved,
         entries=entries,
         from_date=from_date,
         to_date=to_date,

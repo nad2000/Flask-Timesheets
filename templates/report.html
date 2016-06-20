@@ -30,19 +30,18 @@
 				{% endfor -%}
 			</select>
 		</div>
+		<div class="col-md-2">
+			<label for="include-unapproved"><span class="label label-primary">Include Unapproved:</span></label>
+			<input type="checkbox" name="include-unapproved" id="include-unapproved" {% if include_unapproved %}checked{% endif %}>
+		</div>
 	</div>
 	
   
 	{% for e in entries %}
-		{%- if e.started_at %}
-			{% set row_disabled = '' %}
-		{% else %}
-			{% set row_disabled = "disabled" %}
-		{% endif -%}
 		<div class="row">
 			<div class="col-md-1">{{e.user.workplace.code}}</div>
-			<div class="col-md-1">{{e.user.full_name}}</div>
-			<div class="col-md-1">{{e.date}}</div>
+			<div class="col-md-2">{{e.user.full_name}}</div>
+			<div class="col-md-2">{{e.date}}</div>
 		</div>
 	{% endfor %}
   
@@ -60,16 +59,21 @@
 				if ($('#company').val() != '') {
 					url += '/' + $('#company').val()
 				}
+				
+				if (document.getElementById('include-unapproved').checked) {
+					url += '?include_unapproved';
+				}
+				
 				window.location = url;
 			}
 		}
 		/* Select weeek ending */
-		$('#company,#from-date,#to-date').each(function() {
+		$('#company,#from-date,#to-date,#include-unapproved').each(function() {
 			$(this).on('change', function () {
 				runReport();
 				return false;
 			});
-		});	
+		});
 	});	
 	</script>
 {% endblock %}
