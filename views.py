@@ -5,7 +5,7 @@ from peewee import IntegrityError
 from functools import wraps
 from datetime import datetime
 from hashlib import md5
-from flask.ext.security import login_required, roles_required, Security
+from flask_security import login_required, roles_required, Security
 from forms import ExtendedLoginForm, TimeSheetForm, ApprovingForm
 
 security = Security(app, user_datastore, login_form=ExtendedLoginForm)

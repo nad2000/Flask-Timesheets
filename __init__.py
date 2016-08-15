@@ -6,8 +6,8 @@ from flask_admin.contrib.peewee import ModelView
 from playhouse.flask_utils import FlaskDB ### useless
 from peewee import SqliteDatabase
 from werkzeug.routing import BaseConverter
-from flask.ext.bcrypt import Bcrypt
-from flask.ext.security.utils import encrypt_password
+from flask_bcrypt import Bcrypt
+from flask_security.utils import encrypt_password
 from datetime import date, timedelta as _timedelta, datetime
 import logging
 

@@ -4,7 +4,7 @@ from peewee import Model, CharField, DateTimeField, ForeignKeyField, \
 from flask_timesheets import db, FlaskDB, app, current_user, \
     current_week_ending_date, str_to_time
 from hashlib import md5
-from flask.ext.security import PeeweeUserDatastore, UserMixin, \
+from flask_security import PeeweeUserDatastore, UserMixin, \
     RoleMixin, login_required
 from playhouse.fields import ManyToManyField
 from peewee import drop_model_tables, Proxy, CompositeKey, RawQuery
