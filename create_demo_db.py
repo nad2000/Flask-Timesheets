@@ -6,6 +6,10 @@ from flask_timesheets import bcrypt, week_day_dates, encrypt_password, app
 from models import *
 from itertools import product
 from datetime import time
+from faker import Faker
+
+fake = Faker()
+fake.seed(42)
 
 # remove sqlite DB:
 if isinstance(db, FlaskDB):
@@ -54,31 +58,31 @@ admin = user_datastore.create_role(name="admin")
 
 # Companies:
 Company.insert_many((dict(code=code, name=name) for code, name in (
-    ('Z4M4Q0','Hoofs and horns Ltd.'),
-    ('B4J4L6','Acme Ltd.'),
-    ('Y9P9S3','Viral Marvels Ltd.'),
-    ('V9A5K4','Happy Feets Ltd.'),
-    ('Y0U5B3','Abra Cadabra Ltd.'),
-    ('T3N2Y6','No Need Ltd.'),
-    ('Q6U3Y9','Nullam vitae Ltd.'),
-    ('W9J2M9','Ipsum Ltd.'),
-    ('Y3Z9T9','Suspendisse Sagittis Ltd.'),
-    ('R2H4P5','Nulla Ltd.'),
+    ('Z4M4Q0', fake.company()),
+    ('B4J4L6', fake.company()),
+    ('Y9P9S3', fake.company()),
+    ('V9A5K4', fake.company()),
+    ('Y0U5B3', fake.company()),
+    ('T3N2Y6', fake.company()),
+    ('Q6U3Y9', fake.company()),
+    ('W9J2M9', fake.company()),
+    ('Y3Z9T9', fake.company()),
+    ('R2H4P5', fake.company()),
 ))).execute()
 
 # Users
 with app.app_context():
     test_password = encrypt_password('12345')
 for id, (username, email, first_name, last_name) in enumerate((
-            ('user0', 'user0@nowhere.com','Test', 'User0'),
-            ('user1', 'user1@nowhere.com','Test', 'User1'),
-            ('user2', 'user2@nowhere.com','Test', 'User2'),
-            ('approver0', 'approver0@nowhere.com','Test', 'Approver0'),
-            ('approver1', 'approver1@nowhere.com','Test', 'Approver1'),
-            ('approver2', 'approver2@nowhere.com','Test', 'Approver2'),
-            ('admin0', 'admin0@nowhere.com','Test', 'Admin0'),
-            ('admin1', 'admin1@nowhere.com','Test', 'Admin1'),
-            ('admin2', 'admin2@nowhere.com','Test', 'Admin2'),), 1):
+            ('user0', fake.email(), fake.first_name(), fake.last_name()),
+            ('user1',  fake.email(), fake.first_name(), fake.last_name()), 
+            ('user2', fake.email(), fake.first_name(), fake.last_name()),
+            ('approver0', fake.email(), fake.first_name(), fake.last_name()),
+            ('approver1', fake.email(), fake.first_name(), fake.last_name()),
+            ('approver2', fake.email(), fake.first_name(), fake.last_name()),
+            ('admin0', fake.email(), fake.first_name(), fake.last_name()),
+            ('admin1', fake.email(), fake.first_name(), fake.last_name()),
+            ('admin2', fake.email(), fake.first_name(), fake.last_name())), 1):
     user = user_datastore.create_user(
             username=username,
             #code=username.upper(),
