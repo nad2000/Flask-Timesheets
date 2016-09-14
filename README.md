@@ -1,3 +1,24 @@
+# Flexible Lightweight Time-Tracking Application
+
+## Screen shots
+
+### Timesheet Filling and Submission
+![ScreenShot](/Screenshots/Filling.PNG?raw=true "Filling-in Timesheets")
+
+### Update Account
+![ScreenShot](/Screenshots/ChangePassword.PNG?raw=true "Update Account")
+
+## Admin and Approver Functions
+
+### Manage Accounts
+![ScreenShot](/Screenshots/Administration.PNG?raw=true "Manage Accounts")
+
+### Timesheet Approving
+![ScreenShot](/Screenshots/Approving.PNG?raw=true "Timesheet Approving")
+
+### Reporting and Export to MS Excel
+![ScreenShot](/Screenshots/Reporting.PNG?raw=true "Reporting and Export to MS Excel")
+
 
 
 # Docker environment configuration
