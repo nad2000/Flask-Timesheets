@@ -5,7 +5,6 @@ flask-wtf
 flask-bcrypt
 flask-admin
 python-slugify
-flask-debugtoolbar
 flask-login
 peewee
 peewee_migrate
@@ -13,4 +12,5 @@ flask-security
 flask-peewee
 
 # for testing:
+git+https://github.com/mgood/flask-debugtoolbar.git # flask-debugtoolbar
 fake-factory
