@@ -1,8 +1,7 @@
 from datetime import datetime, timedelta
 from peewee import Model, CharField, DateTimeField, ForeignKeyField, \
     TextField, IntegerField, DateField, TimeField, BooleanField
-from flask_timesheets import db, FlaskDB, app, current_user, \
-    current_week_ending_date, str_to_time
+from . import (db, FlaskDB, app, current_user, current_week_ending_date, str_to_time)
 from hashlib import md5
 from flask_security import PeeweeUserDatastore, UserMixin, \
     RoleMixin, login_required
@@ -11,6 +10,7 @@ from peewee import drop_model_tables, Proxy, CompositeKey, RawQuery
 
 UserRolesProxy = Proxy()
 ApproverCompaniesProxy = Proxy()
+
 
 class Company(db.Model):
     name = CharField()
@@ -30,6 +30,7 @@ class Role(db.Model, RoleMixin):
     class Meta:
         table_alias = 'r'
 
+
 class User(db.Model, UserMixin):
     username = CharField(unique=True, index=True)
     password = CharField()
@@ -40,7 +41,8 @@ class User(db.Model, UserMixin):
     active = BooleanField(default=True)
     workplace = ForeignKeyField(Company, related_name='works_for')
     roles = ManyToManyField(Role, related_name='users', through_model=UserRolesProxy)
-    approves_for = ManyToManyField(Company, related_name='approved_by', through_model=ApproverCompaniesProxy)
+    approves_for = ManyToManyField(
+        Company, related_name='approved_by', through_model=ApproverCompaniesProxy)
     full_name = property(lambda self: "%s %s" % (self.first_name, self.last_name))
 
     def gravatar_url(self, size=80):
@@ -48,11 +50,12 @@ class User(db.Model, UserMixin):
             (md5(self.email.strip().lower().encode('utf-8')).hexdigest(), size)
 
     class Meta:
-        order_by = ('username',)
+        order_by = ('username', )
         table_alias = 'u'
 
     def __str__(self):
         return self.full_name
+
 
 class UserRoles(db.Model):
     user = ForeignKeyField(User, index=True, db_column='user_id')
@@ -65,7 +68,9 @@ class UserRoles(db.Model):
         table_alias = 'ur'
         primary_key = CompositeKey('user', 'role')
 
+
 UserRolesProxy.initialize(UserRoles)
+
 
 class ApproverCompanies(db.Model):
     user = ForeignKeyField(User, index=True, db_column='user_id')
@@ -78,7 +83,9 @@ class ApproverCompanies(db.Model):
         table_alias = "ac"
         primary_key = CompositeKey('user', 'company')
 
+
 ApproverCompaniesProxy.initialize(ApproverCompanies)
+
 
 class Break(db.Model):
     code = CharField(unique=True)
@@ -87,7 +94,7 @@ class Break(db.Model):
     alternative_code = CharField(unique=True, null=True)
 
     class Meta:
-        order_by = ('code',)
+        order_by = ('code', )
         table_alias = 'b'
 
     def __str__(self):
@@ -129,11 +136,11 @@ class Entry(db.Model):
 
     def __str__(self):
         output = "On %s from %s to %s" % (
-            self.date.isoformat(),
-            "N/A" if self.started_at is None else self.started_at.strftime("%H:%M"),
-            "N/A" if self.finished_at is None else self.finished_at.strftime("%H:%M"))
+            self.date.isoformat(), "N/A"
+            if self.started_at is None else self.started_at.strftime("%H:%M"), "N/A"
+            if self.finished_at is None else self.finished_at.strftime("%H:%M"))
         if self.break_for:
-            output += " with beak for " +  self.break_for.name
+            output += " with beak for " + self.break_for.name
 
         total_min = self.total_min
         if total_min:
@@ -175,7 +182,6 @@ class Entry(db.Model):
         ORDER BY "date" ASC""", week_ending_date.isoformat(), user.id)
         return rq.execute()
 
-
     @classmethod
     def get_for_approving(cls, *, user=None, week_ending_date=None):
         """
@@ -188,14 +194,12 @@ class Entry(db.Model):
 
         if week_ending_date:
             week_start_date = week_ending_date - timedelta(days=7)
-            query = query.where((Entry.date >= week_start_date)
-                        & (Entry.date <= week_ending_date))
+            query = query.where((Entry.date >= week_start_date) & (Entry.date <= week_ending_date))
 
         return query.order_by(Entry.date).limit(100).execute()
 
 
 class TimeSheet(object):
-
     def __init__(self, *, user=None, week_ending_date=None):
         if user is None:
             user = current_user
@@ -220,9 +224,8 @@ class TimeSheet(object):
                     continue  ## skip if there is no basic data
 
                 old.user = User.get(id=current_user.id)
-                row_date = self.week_ending_date - timedelta(days=(6-idx))
+                row_date = self.week_ending_date - timedelta(days=(6 - idx))
                 old.is_approved = False
-
 
             started_at = str_to_time(new["started_at"])
             finished_at = str_to_time(new["finished_at"])
@@ -264,6 +267,7 @@ class TimeSheet(object):
 # Setup Flask-Security
 user_datastore = PeeweeUserDatastore(db, User, Role, UserRoles)
 
+
 def create_tables():
     """
     Create all DB tables
@@ -272,20 +276,33 @@ def create_tables():
         _db = db.database
     else:
         _db = db
-    _db.connect()
-    _db.create_tables((
-        Company,
-        Role,
-        User,
-        Break,
-        Entry,
-        UserRoles,
-        ApproverCompanies,))
+    try:
+        _db.connect()
+    except OperationalError:
+        pass
+
+    for model in [
+            Company,
+            Role,
+            User,
+            Break,
+            Entry,
+            UserRoles,
+            ApproverCompanies,
+    ]:
+
+        try:
+            model.create_table()
+        except (ProgrammingError, OperationalError) as ex:
+            if "already exists" in str(ex):
+                app.logger.info(f"Table '{model._meta.name}' already exists")
+            else:
+                raise ex
 
 
 def drop_talbes():
     """
     Drop all model tables
     """
-    models = (m for m in globals().values() if isinstance(m, type)  and issubclass(m, db.Model))
+    models = (m for m in globals().values() if isinstance(m, type) and issubclass(m, db.Model))
     drop_model_tables(models, fail_silently=True)
