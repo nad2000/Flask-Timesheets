@@ -24,7 +24,7 @@
 
 ```
 # Create a virtualenv:
-virtualevn -ppython3.6 venv
+virtualenv -ppython3.6 venv
 # Activate it:
 . venv/bin/activate
 # Install the app and development dependencies:
