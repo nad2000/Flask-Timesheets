@@ -1,18 +1,22 @@
 from datetime import datetime, timedelta
-from peewee import Model, CharField, DateTimeField, ForeignKeyField, \
-    TextField, IntegerField, DateField, TimeField, BooleanField
+from peewee import (Model, CharField, DateTimeField, DeferredForeignKey, ForeignKeyField,
+                    TextField, IntegerField, DateField, TimeField, BooleanField, ManyToManyField)
 from . import (db, FlaskDB, app, current_user, current_week_ending_date, str_to_time)
 from hashlib import md5
-from flask_security import PeeweeUserDatastore, UserMixin, \
-    RoleMixin, login_required
-from playhouse.fields import ManyToManyField
-from peewee import drop_model_tables, Proxy, CompositeKey, RawQuery
-
-UserRolesProxy = Proxy()
-ApproverCompaniesProxy = Proxy()
+from flask_security import (PeeweeUserDatastore, UserMixin, RoleMixin, login_required)
+from peewee import CompositeKey, RawQuery, OperationalError, ProgrammingError, DeferredThroughModel
 
 
-class Company(db.Model):
+class BaseModel(Model):
+    """Application model base."""
+
+    class Meta:  # noqa: D101,D106
+        database = db
+        only_save_dirty = True
+        legacy_table_names = False
+
+
+class Company(BaseModel):
     name = CharField()
     code = CharField()
 
@@ -23,7 +27,11 @@ class Company(db.Model):
         return self.name
 
 
-class Role(db.Model, RoleMixin):
+UserRoleDeferred = DeferredThroughModel()
+ApproverCompanyDeferred = DeferredThroughModel()
+
+
+class Role(BaseModel, RoleMixin):
     name = CharField(unique=True)
     description = TextField(null=True)
 
@@ -31,18 +39,19 @@ class Role(db.Model, RoleMixin):
         table_alias = 'r'
 
 
-class User(db.Model, UserMixin):
+
+class User(BaseModel, UserMixin):
     username = CharField(unique=True, index=True)
     password = CharField()
     email = CharField()
     first_name = CharField()
     last_name = CharField()
-    #confirmed_at = DateTimeField(null=True)
+    # confirmed_at = DateTimeField(null=True)
     active = BooleanField(default=True)
-    workplace = ForeignKeyField(Company, related_name='works_for')
-    roles = ManyToManyField(Role, related_name='users', through_model=UserRolesProxy)
+    workplace = ForeignKeyField(Company, backref='works_for')
+    roles = ManyToManyField(Role, backref='users', through_model=UserRoleDeferred)
     approves_for = ManyToManyField(
-        Company, related_name='approved_by', through_model=ApproverCompaniesProxy)
+        Company, backref='approved_by', through_model=ApproverCompanyDeferred)
     full_name = property(lambda self: "%s %s" % (self.first_name, self.last_name))
 
     def gravatar_url(self, size=80):
@@ -57,37 +66,35 @@ class User(db.Model, UserMixin):
         return self.full_name
 
 
-class UserRoles(db.Model):
-    user = ForeignKeyField(User, index=True, db_column='user_id')
-    role = ForeignKeyField(Role, index=True, db_column='role_id')
+class UserRole(BaseModel):
+    user = ForeignKeyField(User, index=True)
+    role = ForeignKeyField(Role, index=True)
     name = property(lambda self: self.role.name)
     description = property(lambda self: self.role.description)
 
     class Meta:
-        db_table = "user_role"
         table_alias = 'ur'
         primary_key = CompositeKey('user', 'role')
 
 
-UserRolesProxy.initialize(UserRoles)
+UserRoleDeferred.set_model(UserRole)
 
 
-class ApproverCompanies(db.Model):
-    user = ForeignKeyField(User, index=True, db_column='user_id')
-    company = ForeignKeyField(Company, index=True, db_column='company_id')
+class ApproverCompany(BaseModel):
+    user = ForeignKeyField(User, index=True)
+    company = ForeignKeyField(Company, index=True)
     name = property(lambda self: self.company.name)
     code = property(lambda self: self.company.code)
 
     class Meta:
-        db_table = "approver_company"
         table_alias = "ac"
         primary_key = CompositeKey('user', 'company')
 
 
-ApproverCompaniesProxy.initialize(ApproverCompanies)
+ApproverCompanyDeferred.set_model(ApproverCompany)
 
 
-class Break(db.Model):
+class Break(BaseModel):
     code = CharField(unique=True)
     name = CharField()
     minutes = IntegerField()
@@ -105,16 +112,16 @@ class Break(db.Model):
             % (self.code, self.name, self.minutes, self.alternative_code)
 
 
-class Entry(db.Model):
+class Entry(BaseModel):
     date = DateField()
-    user = ForeignKeyField(User, related_name='reported_by')
-    approver = ForeignKeyField(User, related_name='approved_by', null=True)
+    user = ForeignKeyField(User, backref='reported_by')
+    approver = ForeignKeyField(User, backref='approved_by', null=True)
     started_at = TimeField()
     finished_at = TimeField()
     modified_at = DateTimeField(default=datetime.now)
     approved_at = DateTimeField(null=True)
     comment = TextField(null=True, default="")
-    break_for = ForeignKeyField(Break, related_name='break_for', null=True)
+    break_for = ForeignKeyField(Break, backref='break_for', null=True)
     is_approved = BooleanField(default=False)
     break_length = property(lambda self: self.break_for.minutes if self.break_for else 0)
 
@@ -199,7 +206,8 @@ class Entry(db.Model):
         return query.order_by(Entry.date).limit(100).execute()
 
 
-class TimeSheet(object):
+class TimeSheet:
+
     def __init__(self, *, user=None, week_ending_date=None):
         if user is None:
             user = current_user
@@ -220,8 +228,9 @@ class TimeSheet(object):
         """
         for idx, (old, new) in enumerate(zip(self.entries, rows)):
             if not new["id"] or new["id"] == "None":
-                if not new["started_at"] or new["started_at"] == "None" or not new["finished_at"] or new["finished_at"] == "None":  ## Create a new entry
-                    continue  ## skip if there is no basic data
+                if not new["started_at"] or new["started_at"] == "None" or not new[
+                        "finished_at"] or new["finished_at"] == "None":  # Create a new entry
+                    continue  # skip if there is no basic data
 
                 old.user = User.get(id=current_user.id)
                 row_date = self.week_ending_date - timedelta(days=(6 - idx))
@@ -232,7 +241,7 @@ class TimeSheet(object):
             break_for = Break.get(id=int(new["break_id"])) if new["break_id"] else None
 
             if (old.started_at != started_at or old.finished_at != finished_at
-                    or old.break_for != break_for):  ## update only if there are changes:
+                    or old.break_for != break_for):  # update only if there are changes:
                 old.started_at = started_at
                 old.finished_at = finished_at
                 if break_for:
@@ -265,7 +274,17 @@ class TimeSheet(object):
 
 
 # Setup Flask-Security
-user_datastore = PeeweeUserDatastore(db, User, Role, UserRoles)
+user_datastore = PeeweeUserDatastore(db, User, Role, UserRole)
+
+MODELS = [
+    Company,
+    Role,
+    User,
+    Break,
+    Entry,
+    UserRole,
+    ApproverCompany,
+]
 
 
 def create_tables():
@@ -281,15 +300,7 @@ def create_tables():
     except OperationalError:
         pass
 
-    for model in [
-            Company,
-            Role,
-            User,
-            Break,
-            Entry,
-            UserRoles,
-            ApproverCompanies,
-    ]:
+    for model in MODELS:
 
         try:
             model.create_table()
@@ -304,5 +315,5 @@ def drop_talbes():
     """
     Drop all model tables
     """
-    models = (m for m in globals().values() if isinstance(m, type) and issubclass(m, db.Model))
-    drop_model_tables(models, fail_silently=True)
+    models = (m for m in globals().values() if isinstance(m, type) and issubclass(m, BaseModel))
+    db.drop_tables(models, fail_silently=True)

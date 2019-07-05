@@ -59,7 +59,8 @@ def week_day_dates():
 
 app = Flask(__name__)
 app.config.from_object(settings)
-db = FlaskDB(app)
+# db = FlaskDB(app)
+db = SqliteDatabase('app.db')
 bcrypt = Bcrypt(app)
 admin = Admin(app, name='Time Sheets', template_mode='bootstrap3')
 
