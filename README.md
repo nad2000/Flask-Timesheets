@@ -28,7 +28,7 @@ virtualenv -ppython3.6 venv
 # Activate it:
 . venv/bin/activate
 # Install the app and development dependencies:
-pip insall -e '.[dev]'
+pip install -e '.[dev]'
 # Tell the Flask which module to use:
 export FLASK_APP=time_sheets
 # Init DB:
