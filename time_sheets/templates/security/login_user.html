@@ -1,5 +1,4 @@
 {% from "security/_macros.html" import render_field_with_errors, render_field %}
-{% include "security/_messages.html" %}
 {% extends "base.html" %}
 {% block content %}
 
@@ -12,5 +11,15 @@
   {{ render_field(login_user_form.next) }}
   {{ render_field(login_user_form.submit) }}
 </form>
-{% include "security/_menu.html" %}
+
 {% endblock %}
+
+{% block footer %}
+  {{super()}}
+  <script type="text/javascript">
+    $(window).on('load',function(){
+        $('#modalLoginForm').modal('show');
+    });
+  </script>
+{% endblock %}
+
