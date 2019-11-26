@@ -7,5 +7,5 @@ flask-admin
 python-slugify
 peewee
 peewee_migrate
-flask-security<3.0.0
+flask-security
 flask-peewee
