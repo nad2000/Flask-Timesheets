@@ -5,8 +5,7 @@ flask-wtf
 flask-bcrypt
 flask-admin
 python-slugify
-flask-login
 peewee
 peewee_migrate
-flask-security
+flask-security<3.0.0
 flask-peewee

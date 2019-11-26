@@ -274,7 +274,16 @@ class TimeSheet:
 
 
 # Setup Flask-Security
-user_datastore = PeeweeUserDatastore(db, User, Role, UserRole)
+class UserDatastore(PeeweeUserDatastore):
+    """Workaround for https://github.com/mattupstate/flask-security/issues/463"""
+
+    def get_user(self, identifier):
+        return self.user_model.get((self.user_model.id == identifier)
+                                   | (self.user_model.username == identifier)
+                                   | (self.user_model.email == identifier))
+
+
+user_datastore = UserDatastore(db, User, Role, UserRole)
 
 MODELS = [
     Company,
@@ -288,9 +297,7 @@ MODELS = [
 
 
 def create_tables():
-    """
-    Create all DB tables
-    """
+    """Create all DB tables"""
     if isinstance(db, FlaskDB):
         _db = db.database
     else:
